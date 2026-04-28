@@ -51,9 +51,10 @@ CourseWatch/
 3. In Signing & Capabilities, choose your development team if Xcode asks.
 4. Build and run on macOS 13 or newer.
 5. Click the CourseWatch menu bar icon, open Settings, and enter:
-   - Canvas base URL, for example `https://canvas.ucsd.edu`
+   - Canvas link or base URL, for example `https://canvas.ucsd.edu`
    - Canvas personal access token
-6. Click Test Connection, then Save.
+6. Use Get Canvas token in Settings if you need to create a token.
+7. Click Test Connection, then Save.
 
 ## Canvas Token
 
@@ -61,12 +62,11 @@ A Canvas token is a password substitute that lets CourseWatch read your Canvas c
 
 To create one:
 
-1. Open Canvas, for example `https://canvas.ucsd.edu`.
-2. Go to Account > Settings.
-3. Scroll to Approved Integrations.
-4. Click New Access Token.
-5. Use `CourseWatch` as the purpose.
-6. Generate the token, copy the token value once, and paste it into CourseWatch Settings.
+1. Paste your Canvas link into CourseWatch Settings, for example `https://canvas.ucsd.edu`.
+2. Click Get Canvas token.
+3. In Canvas, go to Approved Integrations and click New Access Token.
+4. Use `CourseWatch` as the purpose.
+5. Generate the token, copy the token value once, and paste it into CourseWatch Settings.
 
 CourseWatch uses:
 

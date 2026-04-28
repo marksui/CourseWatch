@@ -41,8 +41,33 @@ struct SettingsView: View {
             }
 
             VStack(alignment: .leading, spacing: 12) {
-                TextField("https://canvas.ucsd.edu", text: baseURLBinding)
-                    .textFieldStyle(.roundedBorder)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        TextField("https://canvas.ucsd.edu", text: baseURLBinding)
+                            .textFieldStyle(.roundedBorder)
+
+                        Button {
+                            pasteCanvasLinkFromClipboard()
+                        } label: {
+                            Label("Paste Canvas Link", systemImage: "link")
+                        }
+                        .help("Paste Canvas link from clipboard")
+                    }
+
+                    HStack(spacing: 8) {
+                        Button {
+                            openCanvasSettings()
+                        } label: {
+                            Label("Get Canvas token", systemImage: "key")
+                        }
+                        .disabled(canvasSettingsURL == nil)
+
+                        Text(canvasSettingsURL == nil ? "Paste your Canvas link first." : "Opens Account > Settings where Canvas creates tokens.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                }
 
                 HStack(spacing: 8) {
                     Group {
@@ -99,6 +124,7 @@ struct SettingsView: View {
 
                 Button("Test Connection") {
                     Task {
+                        normalizeBaseURL()
                         let success = await viewModel.testConnection(baseURL: baseURL, token: token)
                         statusMessage = success ? "Connection successful." : viewModel.errorMessage
                     }
@@ -106,6 +132,7 @@ struct SettingsView: View {
                 .disabled(!canUseCanvasActions || viewModel.isLoading)
 
                 Button("Save") {
+                    normalizeBaseURL()
                     viewModel.saveSettings(baseURL: baseURL, token: token)
                     Task { await viewModel.refresh() }
                     closeSettings()
@@ -168,13 +195,13 @@ struct SettingsView: View {
     }
 
     private var canUseCanvasActions: Bool {
-        !baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        normalizedCanvasBaseURL(from: baseURL) != nil &&
         !token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private var statusColor: Color {
         switch statusMessage {
-        case "Connection successful.", "Token pasted.", "Token deleted.":
+        case "Canvas link pasted.", "Connection successful.", "Token pasted.", "Token deleted.":
             return .green
         default:
             return .red
@@ -196,14 +223,23 @@ struct SettingsView: View {
     }
 
     private var canvasSettingsURL: URL? {
-        guard let url = URL(string: baseURL.trimmingCharacters(in: .whitespacesAndNewlines)),
-              let scheme = url.scheme,
-              ["http", "https"].contains(scheme.lowercased()),
-              url.host != nil else {
-            return nil
+        normalizedCanvasBaseURL(from: baseURL)?
+            .appending(path: "profile/settings")
+    }
+
+    private func pasteCanvasLinkFromClipboard() {
+        guard let clipboardText = NSPasteboard.general.string(forType: .string) else {
+            statusMessage = "Clipboard does not contain a Canvas link."
+            return
         }
 
-        return url.appending(path: "profile/settings")
+        guard let normalizedURL = normalizedCanvasBaseURL(from: clipboardText) else {
+            statusMessage = "Clipboard does not contain a valid Canvas link."
+            return
+        }
+
+        baseURL = normalizedURL.absoluteString
+        statusMessage = "Canvas link pasted."
     }
 
     private func pasteTokenFromClipboard() {
@@ -246,6 +282,35 @@ struct SettingsView: View {
         }
 
         NSWorkspace.shared.open(canvasSettingsURL)
+    }
+
+    private func normalizeBaseURL() {
+        guard let normalizedURL = normalizedCanvasBaseURL(from: baseURL) else {
+            return
+        }
+
+        baseURL = normalizedURL.absoluteString
+    }
+
+    private func normalizedCanvasBaseURL(from value: String) -> URL? {
+        let trimmedValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedValue.isEmpty else {
+            return nil
+        }
+
+        let valueWithScheme = trimmedValue.contains("://") ? trimmedValue : "https://\(trimmedValue)"
+        guard let components = URLComponents(string: valueWithScheme),
+              let scheme = components.scheme?.lowercased(),
+              ["http", "https"].contains(scheme),
+              let host = components.host else {
+            return nil
+        }
+
+        var rootComponents = URLComponents()
+        rootComponents.scheme = scheme
+        rootComponents.host = host
+        rootComponents.port = components.port
+        return rootComponents.url
     }
 
     private func closeSettings() {
