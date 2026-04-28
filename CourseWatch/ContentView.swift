@@ -5,6 +5,20 @@ struct ContentView: View {
     @EnvironmentObject private var viewModel: CourseWatchViewModel
 
     var body: some View {
+        Group {
+            if viewModel.isShowingSettings {
+                SettingsView {
+                    viewModel.isShowingSettings = false
+                }
+                .environmentObject(viewModel)
+            } else {
+                mainContent
+            }
+        }
+        .background(.background)
+    }
+
+    private var mainContent: some View {
         VStack(spacing: 0) {
             header
 
@@ -37,11 +51,6 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
             }
-        }
-        .background(.background)
-        .sheet(isPresented: $viewModel.isShowingSettings) {
-            SettingsView()
-                .environmentObject(viewModel)
         }
     }
 

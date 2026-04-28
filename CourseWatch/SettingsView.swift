@@ -5,14 +5,20 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var viewModel: CourseWatchViewModel
 
+    let onClose: (() -> Void)?
+
     @State private var baseURL: String = ""
     @State private var token: String = ""
     @State private var statusMessage: String?
     @State private var isTokenVisible = false
     @State private var isHelpExpanded = true
 
+    init(onClose: (() -> Void)? = nil) {
+        self.onClose = onClose
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Settings")
@@ -24,7 +30,7 @@ struct SettingsView: View {
                 Spacer()
 
                 Button {
-                    dismiss()
+                    closeSettings()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title3)
@@ -66,6 +72,8 @@ struct SettingsView: View {
 
             tokenHelp
 
+            openSourceStatement
+
             if let statusMessage {
                 Text(statusMessage)
                     .font(.footnote)
@@ -85,7 +93,7 @@ struct SettingsView: View {
                 Spacer()
 
                 Button("Cancel") {
-                    dismiss()
+                    closeSettings()
                 }
                 .keyboardShortcut(.cancelAction)
 
@@ -100,14 +108,14 @@ struct SettingsView: View {
                 Button("Save") {
                     viewModel.saveSettings(baseURL: baseURL, token: token)
                     Task { await viewModel.refresh() }
-                    dismiss()
+                    closeSettings()
                 }
                 .keyboardShortcut(.defaultAction)
                 .disabled(!canUseCanvasActions)
             }
         }
         .padding(22)
-        .frame(width: 540, height: 430)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             baseURL = viewModel.baseURL
             token = viewModel.token
@@ -137,6 +145,26 @@ struct SettingsView: View {
             .padding(.top, 6)
         }
         .font(.subheadline.weight(.medium))
+    }
+
+    private var openSourceStatement: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Open-source security statement", systemImage: "lock.shield")
+                .font(.subheadline.weight(.semibold))
+
+            Text("This app is open source and provided as-is. Do not paste your Canvas password here. You are responsible for protecting passwords, tokens, your device, and private information.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("The maintainer is not responsible for password leaks, token leaks, personal information exposure, data loss, account issues, modified builds, compromised devices, or misuse of the app.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(10)
+        .background(.quaternary.opacity(0.4))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var canUseCanvasActions: Bool {
@@ -218,5 +246,13 @@ struct SettingsView: View {
         }
 
         NSWorkspace.shared.open(canvasSettingsURL)
+    }
+
+    private func closeSettings() {
+        if let onClose {
+            onClose()
+        } else {
+            dismiss()
+        }
     }
 }

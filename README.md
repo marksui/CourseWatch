@@ -4,12 +4,6 @@ Version: `v1.0.0`
 
 CourseWatch is a local-first macOS menu bar app for tracking Canvas LMS coursework deadlines. It fetches active courses and upcoming assignments, keeps a small offline cache, and schedules system notifications before due dates.
 
-## Open Source and Security Disclaimer
-
-CourseWatch is an open-source app provided as-is. Do not enter your Canvas password into CourseWatch; only use a Canvas personal access token created from your Canvas account settings.
-
-You are responsible for keeping your passwords, tokens, device, and private information secure. The maintainer is not responsible or liable for password leaks, token leaks, personal information exposure, data loss, account issues, or other damages caused by user error, modified builds, third-party services, compromised devices, or misuse of the app.
-
 ## Features
 
 - Native SwiftUI menu bar app using `MenuBarExtra`
@@ -84,6 +78,13 @@ The token is sent as:
 ```http
 Authorization: Bearer <token>
 ```
+
+## Open Source and Security Disclaimer
+
+- CourseWatch is an open-source app provided as-is.
+- Do not enter your Canvas password into CourseWatch. Only use a Canvas personal access token created from your Canvas account settings.
+- You are responsible for keeping your passwords, tokens, device, and private information secure.
+- The maintainer is not responsible or liable for password leaks, token leaks, personal information exposure, data loss, account issues, modified builds, third-party services, compromised devices, user error, or misuse of the app.
 
 ## Testing Checklist
 
