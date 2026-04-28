@@ -1,2 +1,84 @@
 # CourseWatch
 
+CourseWatch is a local-first macOS menu bar app for tracking Canvas LMS coursework deadlines. It fetches active courses and upcoming assignments, keeps a small offline cache, and schedules system notifications before due dates.
+
+## Features
+
+- Native SwiftUI menu bar app using `MenuBarExtra`
+- Canvas settings for base URL and personal access token
+- Secure token storage in Keychain
+- Canvas API client with async `URLSession`, auth handling, decoding errors, network errors, and basic Link-header pagination
+- Upcoming assignment list sorted by due date
+- Assignment urgency labels: overdue, due today, due tomorrow, due in X days, or no due date
+- Clickable assignment rows that open Canvas in the default browser
+- Local assignment cache for offline fallback
+- System notifications 24 hours and 3 hours before due dates
+
+## File Structure
+
+```text
+CourseWatch.xcodeproj/
+CourseWatch/
+  CourseWatchApp.swift
+  ContentView.swift
+  AssignmentRowView.swift
+  SettingsView.swift
+  EmptyStateView.swift
+  Models.swift
+  CourseWatchViewModel.swift
+  CanvasAPIClient.swift
+  KeychainManager.swift
+  NotificationManager.swift
+  Assets.xcassets/
+```
+
+## Architecture
+
+`CourseWatchApp` creates a `MenuBarExtra` with a window-style popover. `ContentView` switches between setup, empty, loading, error, and assignment-list states.
+
+`CourseWatchViewModel` is the main app coordinator. It loads configuration, reads and writes cached assignments, refreshes Canvas data, exposes UI state, and asks `NotificationManager` to reschedule reminders after successful refreshes.
+
+`CanvasAPIClient` handles Canvas REST calls. It fetches active courses, then upcoming assignments per course, follows `rel="next"` pagination links, decodes optional Canvas fields safely, and returns assignments sorted by due date.
+
+`KeychainManager` stores the Canvas personal access token as a generic password using service name `CourseWatch.CanvasToken`. The Canvas base URL is stored in `UserDefaults`.
+
+## Run in Xcode
+
+1. Open `CourseWatch.xcodeproj` in Xcode 15 or newer.
+2. Select the `CourseWatch` scheme.
+3. In Signing & Capabilities, choose your development team if Xcode asks.
+4. Build and run on macOS 13 or newer.
+5. Click the CourseWatch menu bar icon, open Settings, and enter:
+   - Canvas base URL, for example `https://canvas.ucsd.edu`
+   - Canvas personal access token
+6. Click Test Connection, then Save.
+
+## Canvas Token
+
+Create a Canvas access token from Canvas account settings. CourseWatch uses:
+
+- `GET /api/v1/courses?enrollment_state=active&per_page=100`
+- `GET /api/v1/courses/{course_id}/assignments?bucket=upcoming&per_page=100`
+
+The token is sent as:
+
+```http
+Authorization: Bearer <token>
+```
+
+## Testing Checklist
+
+- Launches as a menu bar app without a Dock window
+- Shows setup state when URL or token is missing
+- Saves base URL to `UserDefaults`
+- Saves, reads, and deletes token through Keychain
+- Test Connection succeeds with valid Canvas settings
+- Invalid URL shows an error
+- Invalid token shows auth failure for 401 or 403
+- Network failure keeps cached assignments visible when available
+- Upcoming assignments are sorted by due date
+- Assignments without due dates appear after dated assignments
+- Clicking an assignment with `html_url` opens the browser
+- Refresh fetches courses and assignments again
+- Notifications are requested and scheduled only for future 24h and 3h reminder times
+
