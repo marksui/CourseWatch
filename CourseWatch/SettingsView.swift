@@ -19,6 +19,16 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
+
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Close settings")
             }
 
             VStack(alignment: .leading, spacing: 12) {
@@ -47,6 +57,11 @@ struct SettingsView: View {
 
                 Spacer()
 
+                Button("Cancel") {
+                    dismiss()
+                }
+                .keyboardShortcut(.cancelAction)
+
                 Button("Test Connection") {
                     Task {
                         let success = await viewModel.testConnection(baseURL: baseURL, token: token)
@@ -72,4 +87,3 @@ struct SettingsView: View {
         }
     }
 }
-

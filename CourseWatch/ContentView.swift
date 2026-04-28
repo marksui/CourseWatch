@@ -50,9 +50,15 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("CourseWatch")
                     .font(.headline)
-                Text(viewModel.isConfigured ? "\(viewModel.assignments.count) upcoming" : "Canvas not configured")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    Image(systemName: connectionIconName)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(connectionColor)
+
+                    Text("\(viewModel.connectionStatus) - \(assignmentCountText)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Spacer()
@@ -88,6 +94,22 @@ struct ContentView: View {
         .padding(14)
     }
 
+    private var assignmentCountText: String {
+        viewModel.isConfigured ? "\(viewModel.assignments.count) upcoming" : "Canvas not configured"
+    }
+
+    private var connectionIconName: String {
+        viewModel.isConnected ? "wifi" : "wifi.slash"
+    }
+
+    private var connectionColor: Color {
+        if viewModel.isLoading {
+            return .secondary
+        }
+
+        return viewModel.isConnected ? .green : .red
+    }
+
     private var assignmentList: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
@@ -99,4 +121,3 @@ struct ContentView: View {
         }
     }
 }
-

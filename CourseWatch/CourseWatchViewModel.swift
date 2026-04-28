@@ -7,6 +7,7 @@ final class CourseWatchViewModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var assignments: [Assignment] = []
+    @Published private(set) var hasSuccessfulConnection = false
     @Published var isShowingSettings = false
 
     private let userDefaults: UserDefaults
@@ -18,6 +19,22 @@ final class CourseWatchViewModel: ObservableObject {
     var isConfigured: Bool {
         !baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var connectionStatus: String {
+        if !isConfigured {
+            return "Not connected"
+        }
+
+        if isLoading {
+            return "Checking connection"
+        }
+
+        return hasSuccessfulConnection ? "Connected" : "Not connected"
+    }
+
+    var isConnected: Bool {
+        isConfigured && hasSuccessfulConnection && errorMessage == nil
     }
 
     init(
@@ -48,6 +65,7 @@ final class CourseWatchViewModel: ObservableObject {
 
         self.baseURL = trimmedBaseURL
         self.token = trimmedToken
+        hasSuccessfulConnection = false
         userDefaults.set(trimmedBaseURL, forKey: baseURLKey)
 
         do {
@@ -66,22 +84,30 @@ final class CourseWatchViewModel: ObservableObject {
         baseURL = ""
         token = ""
         assignments = []
+        hasSuccessfulConnection = false
         userDefaults.removeObject(forKey: baseURLKey)
         try? keychain.deleteToken()
         try? FileManager.default.removeItem(at: Self.cacheURL(fileName: cacheFileName))
     }
 
     func testConnection(baseURL: String, token: String) async -> Bool {
+        let trimmedBaseURL = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedToken = token.trimmingCharacters(in: .whitespacesAndNewlines)
+
         isLoading = true
         errorMessage = nil
 
         defer { isLoading = false }
 
         do {
-            let client = try CanvasAPIClient(baseURLString: baseURL, token: token)
+            let client = try CanvasAPIClient(baseURLString: trimmedBaseURL, token: trimmedToken)
             try await client.testConnection()
+            hasSuccessfulConnection = trimmedBaseURL == self.baseURL && trimmedToken == self.token
             return true
         } catch {
+            if trimmedBaseURL == self.baseURL && trimmedToken == self.token {
+                hasSuccessfulConnection = false
+            }
             errorMessage = error.localizedDescription
             return false
         }
@@ -101,8 +127,10 @@ final class CourseWatchViewModel: ObservableObject {
             let latestAssignments = try await client.fetchUpcomingAssignments()
             assignments = latestAssignments.sortedByDueDate()
             try saveCache(assignments)
+            hasSuccessfulConnection = true
             await notificationManager.rescheduleNotifications(for: assignments)
         } catch {
+            hasSuccessfulConnection = false
             if assignments.isEmpty {
                 assignments = Self.loadCachedAssignments(from: Self.cacheURL(fileName: cacheFileName))
             }
@@ -143,4 +171,3 @@ final class CourseWatchViewModel: ObservableObject {
         return directory.appending(path: fileName)
     }
 }
-
