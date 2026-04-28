@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct SettingsView: View {
@@ -7,6 +8,8 @@ struct SettingsView: View {
     @State private var baseURL: String = ""
     @State private var token: String = ""
     @State private var statusMessage: String?
+    @State private var isTokenVisible = false
+    @State private var isHelpExpanded = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -32,17 +35,41 @@ struct SettingsView: View {
             }
 
             VStack(alignment: .leading, spacing: 12) {
-                TextField("https://canvas.ucsd.edu", text: $baseURL)
+                TextField("https://canvas.ucsd.edu", text: baseURLBinding)
                     .textFieldStyle(.roundedBorder)
 
-                SecureField("Personal access token", text: $token)
+                HStack(spacing: 8) {
+                    Group {
+                        if isTokenVisible {
+                            TextField("Canvas access token", text: tokenBinding)
+                        } else {
+                            SecureField("Canvas access token", text: tokenBinding)
+                        }
+                    }
                     .textFieldStyle(.roundedBorder)
+
+                    Button {
+                        isTokenVisible.toggle()
+                    } label: {
+                        Image(systemName: isTokenVisible ? "eye.slash" : "eye")
+                    }
+                    .help(isTokenVisible ? "Hide token" : "Show token")
+
+                    Button {
+                        pasteTokenFromClipboard()
+                    } label: {
+                        Label("Paste Token", systemImage: "doc.on.clipboard")
+                    }
+                    .help("Paste token from clipboard")
+                }
             }
+
+            tokenHelp
 
             if let statusMessage {
                 Text(statusMessage)
                     .font(.footnote)
-                    .foregroundStyle(statusMessage == "Connection successful." ? .green : .red)
+                    .foregroundStyle(statusColor)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -68,7 +95,7 @@ struct SettingsView: View {
                         statusMessage = success ? "Connection successful." : viewModel.errorMessage
                     }
                 }
-                .disabled(baseURL.isEmpty || token.isEmpty || viewModel.isLoading)
+                .disabled(!canUseCanvasActions || viewModel.isLoading)
 
                 Button("Save") {
                     viewModel.saveSettings(baseURL: baseURL, token: token)
@@ -76,14 +103,120 @@ struct SettingsView: View {
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(baseURL.isEmpty || token.isEmpty)
+                .disabled(!canUseCanvasActions)
             }
         }
         .padding(22)
-        .frame(width: 460, height: 280)
+        .frame(width: 540, height: 430)
         .onAppear {
             baseURL = viewModel.baseURL
             token = viewModel.token
         }
+    }
+
+    private var tokenHelp: some View {
+        DisclosureGroup("What is a Canvas token?", isExpanded: $isHelpExpanded) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Canvas uses a personal access token instead of your password. In Canvas, go to Account > Settings > Approved Integrations > New Access Token.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("Use CourseWatch as the purpose, generate the token, then copy the token value once and paste it here.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    openCanvasSettings()
+                } label: {
+                    Label("Open Canvas Settings", systemImage: "safari")
+                }
+                .disabled(canvasSettingsURL == nil)
+            }
+            .padding(.top, 6)
+        }
+        .font(.subheadline.weight(.medium))
+    }
+
+    private var canUseCanvasActions: Bool {
+        !baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var statusColor: Color {
+        switch statusMessage {
+        case "Connection successful.", "Token pasted.", "Token deleted.":
+            return .green
+        default:
+            return .red
+        }
+    }
+
+    private var baseURLBinding: Binding<String> {
+        Binding(
+            get: { baseURL },
+            set: { baseURL = $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        )
+    }
+
+    private var tokenBinding: Binding<String> {
+        Binding(
+            get: { token },
+            set: { setToken($0) }
+        )
+    }
+
+    private var canvasSettingsURL: URL? {
+        guard let url = URL(string: baseURL.trimmingCharacters(in: .whitespacesAndNewlines)),
+              let scheme = url.scheme,
+              ["http", "https"].contains(scheme.lowercased()),
+              url.host != nil else {
+            return nil
+        }
+
+        return url.appending(path: "profile/settings")
+    }
+
+    private func pasteTokenFromClipboard() {
+        guard let clipboardText = NSPasteboard.general.string(forType: .string) else {
+            statusMessage = "Clipboard does not contain text."
+            return
+        }
+
+        let cleanedToken = cleanedTokenText(clipboardText)
+        guard !cleanedToken.isEmpty else {
+            statusMessage = "Clipboard did not contain a token."
+            return
+        }
+
+        setToken(clipboardText)
+        statusMessage = cleanedToken.count > 1024
+            ? "That paste looked too long. Copy only the token value from Canvas."
+            : "Token pasted."
+    }
+
+    private func setToken(_ value: String) {
+        let cleanedToken = cleanedTokenText(value)
+        token = String(cleanedToken.prefix(1024))
+
+        if cleanedToken.count > 1024 {
+            statusMessage = "That paste looked too long. Copy only the token value from Canvas."
+        }
+    }
+
+    private func cleanedTokenText(_ value: String) -> String {
+        value
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .filter { !$0.isWhitespace }
+    }
+
+    private func openCanvasSettings() {
+        guard let canvasSettingsURL else {
+            statusMessage = "Enter a valid Canvas URL first."
+            return
+        }
+
+        NSWorkspace.shared.open(canvasSettingsURL)
     }
 }

@@ -55,7 +55,18 @@ CourseWatch/
 
 ## Canvas Token
 
-Create a Canvas access token from Canvas account settings. CourseWatch uses:
+A Canvas token is a password substitute that lets CourseWatch read your Canvas courses and assignments without storing your Canvas password.
+
+To create one:
+
+1. Open Canvas, for example `https://canvas.ucsd.edu`.
+2. Go to Account > Settings.
+3. Scroll to Approved Integrations.
+4. Click New Access Token.
+5. Use `CourseWatch` as the purpose.
+6. Generate the token, copy the token value once, and paste it into CourseWatch Settings.
+
+CourseWatch uses:
 
 - `GET /api/v1/courses?enrollment_state=active&per_page=100`
 - `GET /api/v1/courses/{course_id}/assignments?bucket=upcoming&per_page=100`
@@ -81,4 +92,3 @@ Authorization: Bearer <token>
 - Clicking an assignment with `html_url` opens the browser
 - Refresh fetches courses and assignments again
 - Notifications are requested and scheduled only for future 24h and 3h reminder times
-
