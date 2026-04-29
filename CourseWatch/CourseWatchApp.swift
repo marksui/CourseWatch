@@ -8,7 +8,7 @@ struct CourseWatchApp: App {
         MenuBarExtra("CourseWatch", systemImage: "calendar.badge.clock") {
             ContentView()
                 .environmentObject(viewModel)
-                .frame(width: 460, height: 600)
+                .frame(width: 520, height: 620)
                 .task {
                     viewModel.start()
                 }

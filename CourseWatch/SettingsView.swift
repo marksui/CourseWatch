@@ -134,72 +134,7 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            HStack {
-                Button(connectionMode == .canvasAPI ? "Delete Token" : "Delete Feed", role: .destructive) {
-                    let nextToken = connectionMode == .canvasAPI ? "" : token
-                    let nextCalendarFeedURL = connectionMode == .calendarFeed ? "" : calendarFeedURL
-                    token = nextToken
-                    calendarFeedURL = nextCalendarFeedURL
-                    viewModel.saveSettings(
-                        connectionMode: connectionMode,
-                        baseURL: baseURL,
-                        token: nextToken,
-                        calendarFeedURL: nextCalendarFeedURL
-                    )
-                    statusMessage = connectionMode == .canvasAPI ? "Token deleted." : "Calendar feed deleted."
-                }
-
-                Button("Restore Hidden") {
-                    viewModel.restoreHiddenAssignments()
-                    statusMessage = "Hidden items restored."
-                }
-                .disabled(viewModel.hiddenAssignmentCount == 0)
-                .help("Restore assignments deleted from CourseWatch")
-
-                Button("Reset Done") {
-                    viewModel.resetCompletedAssignments()
-                    statusMessage = "Done marks reset."
-                }
-                .disabled(viewModel.completedAssignmentCount == 0)
-                .help("Remove all local done checkmarks")
-
-                Spacer()
-
-                Button("Cancel") {
-                    closeSettings()
-                }
-                .keyboardShortcut(.cancelAction)
-
-                Button("Test Connection") {
-                    Task {
-                        normalizeBaseURL()
-                        normalizeCalendarFeedURL()
-                        let success = await viewModel.testConnection(
-                            connectionMode: connectionMode,
-                            baseURL: baseURL,
-                            token: token,
-                            calendarFeedURL: calendarFeedURL
-                        )
-                        statusMessage = success ? "Connection successful." : viewModel.errorMessage
-                    }
-                }
-                .disabled(!canUseCurrentMode || viewModel.isLoading)
-
-                Button("Save") {
-                    normalizeBaseURL()
-                    normalizeCalendarFeedURL()
-                    viewModel.saveSettings(
-                        connectionMode: connectionMode,
-                        baseURL: baseURL,
-                        token: token,
-                        calendarFeedURL: calendarFeedURL
-                    )
-                    Task { await viewModel.refresh() }
-                    closeSettings()
-                }
-                .keyboardShortcut(.defaultAction)
-                .disabled(!canUseCurrentMode)
-            }
+            settingsFooter
         }
         .padding(22)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -208,6 +143,54 @@ struct SettingsView: View {
             baseURL = viewModel.baseURL
             token = viewModel.token
             calendarFeedURL = viewModel.calendarFeedURL
+        }
+    }
+
+    private var settingsFooter: some View {
+        HStack(spacing: 10) {
+            Menu {
+                Button(connectionMode == .canvasAPI ? "Delete Saved Token" : "Delete Calendar Feed", role: .destructive) {
+                    deleteCurrentCredential()
+                }
+
+                Button("Restore Hidden Items") {
+                    viewModel.restoreHiddenAssignments()
+                    statusMessage = "Hidden items restored."
+                }
+                .disabled(viewModel.hiddenAssignmentCount == 0)
+
+                Button("Reset Done Checkmarks") {
+                    viewModel.resetCompletedAssignments()
+                    statusMessage = "Done marks reset."
+                }
+                .disabled(viewModel.completedAssignmentCount == 0)
+            } label: {
+                Label("More", systemImage: "ellipsis.circle")
+            }
+            .menuStyle(.button)
+            .help("More settings actions")
+
+            Spacer()
+
+            Button("Cancel") {
+                closeSettings()
+            }
+            .keyboardShortcut(.cancelAction)
+
+            Button {
+                testCurrentConnection()
+            } label: {
+                Label("Test", systemImage: "bolt.horizontal.circle")
+            }
+            .disabled(!canUseCurrentMode || viewModel.isLoading)
+            .help("Test connection")
+
+            Button("Save") {
+                saveCurrentSettings()
+            }
+            .keyboardShortcut(.defaultAction)
+            .buttonStyle(.borderedProminent)
+            .disabled(!canUseCurrentMode)
         }
     }
 
@@ -432,6 +415,47 @@ struct SettingsView: View {
 
         calendarFeedURL = feedURL.absoluteString
         statusMessage = "Calendar feed extracted."
+    }
+
+    private func deleteCurrentCredential() {
+        let nextToken = connectionMode == .canvasAPI ? "" : token
+        let nextCalendarFeedURL = connectionMode == .calendarFeed ? "" : calendarFeedURL
+        token = nextToken
+        calendarFeedURL = nextCalendarFeedURL
+        viewModel.saveSettings(
+            connectionMode: connectionMode,
+            baseURL: baseURL,
+            token: nextToken,
+            calendarFeedURL: nextCalendarFeedURL
+        )
+        statusMessage = connectionMode == .canvasAPI ? "Token deleted." : "Calendar feed deleted."
+    }
+
+    private func testCurrentConnection() {
+        Task {
+            normalizeBaseURL()
+            normalizeCalendarFeedURL()
+            let success = await viewModel.testConnection(
+                connectionMode: connectionMode,
+                baseURL: baseURL,
+                token: token,
+                calendarFeedURL: calendarFeedURL
+            )
+            statusMessage = success ? "Connection successful." : viewModel.errorMessage
+        }
+    }
+
+    private func saveCurrentSettings() {
+        normalizeBaseURL()
+        normalizeCalendarFeedURL()
+        viewModel.saveSettings(
+            connectionMode: connectionMode,
+            baseURL: baseURL,
+            token: token,
+            calendarFeedURL: calendarFeedURL
+        )
+        Task { await viewModel.refresh() }
+        closeSettings()
     }
 
     private func setCalendarFeedURL(_ value: String) {
