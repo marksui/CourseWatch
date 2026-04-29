@@ -57,15 +57,11 @@ a {
 }
 
 .brand-mark {
-  display: grid;
   width: 34px;
   height: 34px;
-  place-items: center;
   border-radius: 8px;
-  background: var(--brand-dark);
-  color: #fff;
-  font-size: 12px;
-  letter-spacing: 0;
+  box-shadow: 0 8px 24px rgba(20, 31, 28, 0.16);
+  object-fit: cover;
 }
 
 .site-nav {
@@ -129,6 +125,14 @@ a {
   margin: 0 auto;
   color: #fff;
   text-align: center;
+}
+
+.hero-icon {
+  width: 92px;
+  height: 92px;
+  margin-bottom: 18px;
+  border-radius: 22px;
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.3);
 }
 
 .eyebrow {
