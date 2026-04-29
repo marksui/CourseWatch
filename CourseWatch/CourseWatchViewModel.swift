@@ -2,8 +2,10 @@ import Foundation
 
 @MainActor
 final class CourseWatchViewModel: ObservableObject {
+    @Published var connectionMode: ConnectionMode
     @Published var baseURL: String
     @Published var token: String
+    @Published var calendarFeedURL: String
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var assignments: [Assignment] = []
@@ -13,12 +15,18 @@ final class CourseWatchViewModel: ObservableObject {
     private let userDefaults: UserDefaults
     private let keychain: KeychainManager
     private let notificationManager: NotificationManager
+    private let connectionModeKey = "connectionMode"
     private let baseURLKey = "canvasBaseURL"
     private let cacheFileName = "assignments-cache.json"
 
     var isConfigured: Bool {
-        !baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        switch connectionMode {
+        case .canvasAPI:
+            return !baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+                !token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        case .calendarFeed:
+            return ICSCalendarClient.normalizedFeedURL(from: calendarFeedURL) != nil
+        }
     }
 
     var connectionStatus: String {
@@ -30,7 +38,7 @@ final class CourseWatchViewModel: ObservableObject {
             return "Checking connection"
         }
 
-        return hasSuccessfulConnection ? "Connected" : "Not connected"
+        return hasSuccessfulConnection ? "Connected via \(connectionMode.title)" : "Not connected"
     }
 
     var isConnected: Bool {
@@ -45,8 +53,12 @@ final class CourseWatchViewModel: ObservableObject {
         self.userDefaults = userDefaults
         self.keychain = keychain
         self.notificationManager = notificationManager
+        self.connectionMode = ConnectionMode(
+            rawValue: userDefaults.string(forKey: connectionModeKey) ?? ConnectionMode.canvasAPI.rawValue
+        ) ?? .canvasAPI
         self.baseURL = userDefaults.string(forKey: baseURLKey) ?? ""
         self.token = (try? keychain.readToken()) ?? ""
+        self.calendarFeedURL = (try? keychain.readCalendarFeedURL()) ?? ""
         self.assignments = Self.loadCachedAssignments(from: Self.cacheURL(fileName: cacheFileName))
     }
 
@@ -60,12 +72,25 @@ final class CourseWatchViewModel: ObservableObject {
     }
 
     func saveSettings(baseURL: String, token: String) {
+        saveSettings(
+            connectionMode: .canvasAPI,
+            baseURL: baseURL,
+            token: token,
+            calendarFeedURL: calendarFeedURL
+        )
+    }
+
+    func saveSettings(connectionMode: ConnectionMode, baseURL: String, token: String, calendarFeedURL: String) {
         let trimmedBaseURL = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedToken = token.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedCalendarFeedURL = calendarFeedURL.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        self.connectionMode = connectionMode
         self.baseURL = trimmedBaseURL
         self.token = trimmedToken
+        self.calendarFeedURL = trimmedCalendarFeedURL
         hasSuccessfulConnection = false
+        userDefaults.set(connectionMode.rawValue, forKey: connectionModeKey)
         userDefaults.set(trimmedBaseURL, forKey: baseURLKey)
 
         do {
@@ -74,6 +99,13 @@ final class CourseWatchViewModel: ObservableObject {
             } else {
                 try keychain.saveToken(trimmedToken)
             }
+
+            if trimmedCalendarFeedURL.isEmpty {
+                try keychain.deleteCalendarFeedURL()
+            } else {
+                try keychain.saveCalendarFeedURL(trimmedCalendarFeedURL)
+            }
+
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -83,16 +115,34 @@ final class CourseWatchViewModel: ObservableObject {
     func clearSettings() {
         baseURL = ""
         token = ""
+        calendarFeedURL = ""
         assignments = []
         hasSuccessfulConnection = false
+        userDefaults.removeObject(forKey: connectionModeKey)
         userDefaults.removeObject(forKey: baseURLKey)
         try? keychain.deleteToken()
+        try? keychain.deleteCalendarFeedURL()
         try? FileManager.default.removeItem(at: Self.cacheURL(fileName: cacheFileName))
     }
 
     func testConnection(baseURL: String, token: String) async -> Bool {
+        await testConnection(
+            connectionMode: .canvasAPI,
+            baseURL: baseURL,
+            token: token,
+            calendarFeedURL: calendarFeedURL
+        )
+    }
+
+    func testConnection(
+        connectionMode: ConnectionMode,
+        baseURL: String,
+        token: String,
+        calendarFeedURL: String
+    ) async -> Bool {
         let trimmedBaseURL = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedToken = token.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedCalendarFeedURL = calendarFeedURL.trimmingCharacters(in: .whitespacesAndNewlines)
 
         isLoading = true
         errorMessage = nil
@@ -100,12 +150,25 @@ final class CourseWatchViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let client = try CanvasAPIClient(baseURLString: trimmedBaseURL, token: trimmedToken)
-            try await client.testConnection()
-            hasSuccessfulConnection = trimmedBaseURL == self.baseURL && trimmedToken == self.token
+            switch connectionMode {
+            case .canvasAPI:
+                let client = try CanvasAPIClient(baseURLString: trimmedBaseURL, token: trimmedToken)
+                try await client.testConnection()
+            case .calendarFeed:
+                let client = try ICSCalendarClient(feedURLString: trimmedCalendarFeedURL)
+                _ = try await client.fetchAssignments()
+            }
+
+            hasSuccessfulConnection = connectionMode == self.connectionMode &&
+                trimmedBaseURL == self.baseURL &&
+                trimmedToken == self.token &&
+                trimmedCalendarFeedURL == self.calendarFeedURL
             return true
         } catch {
-            if trimmedBaseURL == self.baseURL && trimmedToken == self.token {
+            if connectionMode == self.connectionMode &&
+                trimmedBaseURL == self.baseURL &&
+                trimmedToken == self.token &&
+                trimmedCalendarFeedURL == self.calendarFeedURL {
                 hasSuccessfulConnection = false
             }
             errorMessage = error.localizedDescription
@@ -115,7 +178,7 @@ final class CourseWatchViewModel: ObservableObject {
 
     func refresh() async {
         guard isConfigured else {
-            errorMessage = "Missing configuration. Add your Canvas URL and access token."
+            errorMessage = "Missing configuration. Add Canvas API settings or a Calendar Feed URL."
             return
         }
 
@@ -123,8 +186,16 @@ final class CourseWatchViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            let client = try CanvasAPIClient(baseURLString: baseURL, token: token)
-            let latestAssignments = try await client.fetchUpcomingAssignments()
+            let latestAssignments: [Assignment]
+            switch connectionMode {
+            case .canvasAPI:
+                let client = try CanvasAPIClient(baseURLString: baseURL, token: token)
+                latestAssignments = try await client.fetchUpcomingAssignments()
+            case .calendarFeed:
+                let client = try ICSCalendarClient(feedURLString: calendarFeedURL)
+                latestAssignments = try await client.fetchAssignments()
+            }
+
             assignments = latestAssignments.sortedByDueDate()
             try saveCache(assignments)
             hasSuccessfulConnection = true

@@ -16,13 +16,38 @@ final class KeychainManager {
     static let shared = KeychainManager()
 
     private let service = "CourseWatch.CanvasToken"
-    private let account = "CanvasPersonalAccessToken"
+    private let tokenAccount = "CanvasPersonalAccessToken"
+    private let calendarFeedAccount = "CanvasCalendarFeedURL"
 
     private init() {}
 
     func saveToken(_ token: String) throws {
-        let data = Data(token.utf8)
-        let query = baseQuery()
+        try saveValue(token, account: tokenAccount)
+    }
+
+    func readToken() throws -> String? {
+        try readValue(account: tokenAccount)
+    }
+
+    func deleteToken() throws {
+        try deleteValue(account: tokenAccount)
+    }
+
+    func saveCalendarFeedURL(_ url: String) throws {
+        try saveValue(url, account: calendarFeedAccount)
+    }
+
+    func readCalendarFeedURL() throws -> String? {
+        try readValue(account: calendarFeedAccount)
+    }
+
+    func deleteCalendarFeedURL() throws {
+        try deleteValue(account: calendarFeedAccount)
+    }
+
+    private func saveValue(_ value: String, account: String) throws {
+        let data = Data(value.utf8)
+        let query = baseQuery(account: account)
 
         let status = SecItemUpdate(query as CFDictionary, [kSecValueData: data] as CFDictionary)
         if status == errSecSuccess {
@@ -44,8 +69,8 @@ final class KeychainManager {
         throw KeychainError.unhandledStatus(status)
     }
 
-    func readToken() throws -> String? {
-        var query = baseQuery()
+    private func readValue(account: String) throws -> String? {
+        var query = baseQuery(account: account)
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
 
@@ -67,15 +92,15 @@ final class KeychainManager {
         return String(data: data, encoding: .utf8)
     }
 
-    func deleteToken() throws {
-        let status = SecItemDelete(baseQuery() as CFDictionary)
+    private func deleteValue(account: String) throws {
+        let status = SecItemDelete(baseQuery(account: account) as CFDictionary)
 
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw KeychainError.unhandledStatus(status)
         }
     }
 
-    private func baseQuery() -> [String: Any] {
+    private func baseQuery(account: String) -> [String: Any] {
         [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -83,4 +108,3 @@ final class KeychainManager {
         ]
     }
 }
-

@@ -27,7 +27,7 @@ struct ContentView: View {
             if !viewModel.isConfigured {
                 EmptyStateView(
                     title: "Set up Canvas",
-                    message: "Add your Canvas URL and access token to start tracking coursework."
+                    message: "Add Canvas API settings or a Calendar Feed URL to start tracking coursework."
                 ) {
                     viewModel.isShowingSettings = true
                 }

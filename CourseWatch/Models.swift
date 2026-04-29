@@ -1,5 +1,21 @@
 import Foundation
 
+enum ConnectionMode: String, CaseIterable, Codable, Identifiable {
+    case canvasAPI
+    case calendarFeed
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .canvasAPI:
+            return "Canvas API"
+        case .calendarFeed:
+            return "Calendar Feed"
+        }
+    }
+}
+
 struct Course: Codable, Identifiable, Hashable {
     let id: Int
     let name: String
@@ -62,4 +78,3 @@ extension String {
         isEmpty ? nil : self
     }
 }
-

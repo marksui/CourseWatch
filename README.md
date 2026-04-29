@@ -8,6 +8,7 @@ CourseWatch is a local-first macOS menu bar app for tracking Canvas LMS coursewo
 
 - Native SwiftUI menu bar app using `MenuBarExtra`
 - Canvas settings for base URL and personal access token
+- Calendar Feed / `.ics` mode with automatic feed URL extraction from pasted text
 - Secure token storage in Keychain
 - Canvas API client with async `URLSession`, auth handling, decoding errors, network errors, and basic Link-header pagination
 - Upcoming assignment list sorted by due date
@@ -40,6 +41,7 @@ CourseWatch/
   Models.swift
   CourseWatchViewModel.swift
   CanvasAPIClient.swift
+  ICSCalendarClient.swift
   KeychainManager.swift
   NotificationManager.swift
   Assets.xcassets/
@@ -53,6 +55,8 @@ CourseWatch/
 
 `CanvasAPIClient` handles Canvas REST calls. It fetches active courses, then upcoming assignments per course, follows `rel="next"` pagination links, decodes optional Canvas fields safely, and returns assignments sorted by due date.
 
+`ICSCalendarClient` handles the Calendar Feed fallback. It extracts `.ics` or `webcal://` links from pasted text, downloads the feed, parses `VEVENT` entries, and maps them into CourseWatch assignments for display, caching, and notifications.
+
 `KeychainManager` stores the Canvas personal access token as a generic password using service name `CourseWatch.CanvasToken`. The Canvas base URL is stored in `UserDefaults`.
 
 ## Run in Xcode
@@ -63,8 +67,9 @@ CourseWatch/
 4. Build and run on macOS 13 or newer.
 5. Click the CourseWatch menu bar icon, open Settings, and enter:
    - Canvas link or base URL, for example `https://canvas.ucsd.edu`
-   - Canvas personal access token
-6. Use Get Canvas token in Settings if you need to create a token.
+   - Canvas personal access token, or
+   - Canvas Calendar Feed / `.ics` URL
+6. Use Get Canvas token in Settings if you need to create a token, or switch to Calendar Feed and use Auto Extract after copying the Canvas Calendar Feed popup text.
 7. Click Test Connection, then Save.
 
 ## Canvas Token
@@ -80,6 +85,22 @@ To create one:
 5. Generate the token, copy the token value once, and paste it into CourseWatch Settings.
 
 If Canvas says your administrators have limited your ability to generate access tokens, CourseWatch v2.0.0 cannot bypass that setting. Contact your Canvas administrator or school IT team and ask them to generate a Canvas API access token for your account, ask whether OAuth/developer-key access is available, or use a Canvas Calendar Feed / `.ics` fallback if your school exposes one.
+
+## Calendar Feed / ICS Fallback
+
+Use this mode when Canvas blocks API tokens or OAuth access:
+
+1. Open Canvas.
+2. Go to Calendar.
+3. Click Calendar Feed.
+4. Copy the feed link or the full popup text.
+5. In CourseWatch Settings, select Calendar Feed.
+6. Click Auto Extract. CourseWatch will find the `.ics` or `webcal://` link automatically when possible.
+7. Click Test Connection, then Save.
+
+Calendar Feed mode is intentionally limited. It can show due dates and schedule notifications, but it may not include full course names, submission status, assignment IDs, or Canvas To Do items.
+
+Auto Extract only reads text the user copies into the clipboard. It does not bypass Canvas login, scrape passwords, or access hidden school settings.
 
 CourseWatch uses:
 
