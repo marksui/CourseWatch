@@ -40,73 +40,78 @@ struct SettingsView: View {
                 .help("Close settings")
             }
 
-            VStack(alignment: .leading, spacing: 12) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 8) {
-                        TextField("https://canvas.ucsd.edu", text: baseURLBinding)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 8) {
+                                TextField("https://canvas.ucsd.edu", text: baseURLBinding)
+                                    .textFieldStyle(.roundedBorder)
+
+                                Button {
+                                    pasteCanvasLinkFromClipboard()
+                                } label: {
+                                    Label("Paste Canvas Link", systemImage: "link")
+                                }
+                                .help("Paste Canvas link from clipboard")
+                            }
+
+                            HStack(spacing: 8) {
+                                Button {
+                                    openCanvasSettings()
+                                } label: {
+                                    Label("Get Canvas token", systemImage: "key")
+                                }
+                                .disabled(canvasSettingsURL == nil)
+
+                                Text(canvasSettingsURL == nil ? "Paste your Canvas link first." : "Opens Account > Settings where Canvas creates tokens.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(2)
+                            }
+                        }
+
+                        HStack(spacing: 8) {
+                            Group {
+                                if isTokenVisible {
+                                    TextField("Canvas access token", text: tokenBinding)
+                                } else {
+                                    SecureField("Canvas access token", text: tokenBinding)
+                                }
+                            }
                             .textFieldStyle(.roundedBorder)
 
-                        Button {
-                            pasteCanvasLinkFromClipboard()
-                        } label: {
-                            Label("Paste Canvas Link", systemImage: "link")
+                            Button {
+                                isTokenVisible.toggle()
+                            } label: {
+                                Image(systemName: isTokenVisible ? "eye.slash" : "eye")
+                            }
+                            .help(isTokenVisible ? "Hide token" : "Show token")
+
+                            Button {
+                                pasteTokenFromClipboard()
+                            } label: {
+                                Label("Paste Token", systemImage: "doc.on.clipboard")
+                            }
+                            .help("Paste token from clipboard")
                         }
-                        .help("Paste Canvas link from clipboard")
                     }
 
-                    HStack(spacing: 8) {
-                        Button {
-                            openCanvasSettings()
-                        } label: {
-                            Label("Get Canvas token", systemImage: "key")
-                        }
-                        .disabled(canvasSettingsURL == nil)
+                    tokenHelp
 
-                        Text(canvasSettingsURL == nil ? "Paste your Canvas link first." : "Opens Account > Settings where Canvas creates tokens.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
+                    adminTokenNotice
+
+                    openSourceStatement
+
+                    if let statusMessage {
+                        Text(statusMessage)
+                            .font(.footnote)
+                            .foregroundStyle(statusColor)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
-
-                HStack(spacing: 8) {
-                    Group {
-                        if isTokenVisible {
-                            TextField("Canvas access token", text: tokenBinding)
-                        } else {
-                            SecureField("Canvas access token", text: tokenBinding)
-                        }
-                    }
-                    .textFieldStyle(.roundedBorder)
-
-                    Button {
-                        isTokenVisible.toggle()
-                    } label: {
-                        Image(systemName: isTokenVisible ? "eye.slash" : "eye")
-                    }
-                    .help(isTokenVisible ? "Hide token" : "Show token")
-
-                    Button {
-                        pasteTokenFromClipboard()
-                    } label: {
-                        Label("Paste Token", systemImage: "doc.on.clipboard")
-                    }
-                    .help("Paste token from clipboard")
-                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-
-            tokenHelp
-
-            openSourceStatement
-
-            if let statusMessage {
-                Text(statusMessage)
-                    .font(.footnote)
-                    .foregroundStyle(statusColor)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Spacer()
 
             HStack {
                 Button("Delete Token", role: .destructive) {
@@ -174,6 +179,27 @@ struct SettingsView: View {
         .font(.subheadline.weight(.medium))
     }
 
+    private var adminTokenNotice: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("If Canvas blocks token creation", systemImage: "exclamationmark.triangle")
+                .font(.subheadline.weight(.semibold))
+
+            Text("Some schools disable personal access tokens. If Canvas says your administrators limit token creation, CourseWatch v1.0.0 cannot connect until your Canvas administrator generates an access token for you.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button {
+                copyAdminTokenRequest()
+            } label: {
+                Label("Copy Admin Request", systemImage: "doc.on.doc")
+            }
+        }
+        .padding(10)
+        .background(.yellow.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
     private var openSourceStatement: some View {
         VStack(alignment: .leading, spacing: 6) {
             Label("Open-source security statement", systemImage: "lock.shield")
@@ -201,7 +227,7 @@ struct SettingsView: View {
 
     private var statusColor: Color {
         switch statusMessage {
-        case "Canvas link pasted.", "Connection successful.", "Token pasted.", "Token deleted.":
+        case "Admin request copied.", "Canvas link pasted.", "Connection successful.", "Token pasted.", "Token deleted.":
             return .green
         default:
             return .red
@@ -282,6 +308,23 @@ struct SettingsView: View {
         }
 
         NSWorkspace.shared.open(canvasSettingsURL)
+    }
+
+    private func copyAdminTokenRequest() {
+        let canvasHost = normalizedCanvasBaseURL(from: baseURL)?.host ?? "my Canvas instance"
+        let request = """
+        Hello,
+
+        I am using CourseWatch, a local macOS menu bar app that reads my Canvas courses and upcoming assignments through the Canvas API. Canvas says students cannot generate their own access tokens on \(canvasHost).
+
+        Could you generate a Canvas API access token for my account, or let me know the approved way to connect a local coursework deadline app to Canvas?
+
+        Thank you.
+        """
+
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(request, forType: .string)
+        statusMessage = "Admin request copied."
     }
 
     private func normalizeBaseURL() {

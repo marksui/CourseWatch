@@ -68,6 +68,8 @@ To create one:
 4. Use `CourseWatch` as the purpose.
 5. Generate the token, copy the token value once, and paste it into CourseWatch Settings.
 
+If Canvas says your administrators have limited your ability to generate access tokens, CourseWatch v1.0.0 cannot bypass that setting. Contact your Canvas administrator or school IT team and ask them to generate a Canvas API access token for your account, or ask for the approved way to connect a local coursework deadline app to Canvas.
+
 CourseWatch uses:
 
 - `GET /api/v1/courses?enrollment_state=active&per_page=100`
