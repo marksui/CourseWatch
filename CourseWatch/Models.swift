@@ -16,36 +16,6 @@ enum ConnectionMode: String, CaseIterable, Codable, Identifiable {
     }
 }
 
-enum AppAppearance: String, CaseIterable, Codable, Identifiable {
-    case system
-    case light
-    case dark
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .system:
-            return "Follow System"
-        case .light:
-            return "White"
-        case .dark:
-            return "Black"
-        }
-    }
-
-    var iconName: String {
-        switch self {
-        case .system:
-            return "circle.lefthalf.filled"
-        case .light:
-            return "sun.max"
-        case .dark:
-            return "moon"
-        }
-    }
-}
-
 struct Course: Codable, Identifiable, Hashable {
     let id: Int
     let name: String

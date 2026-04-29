@@ -1,6 +1,6 @@
 # CourseWatch
 
-Version: `v2.2.0`
+Version: `v2.1.0`
 
 CourseWatch is a local-first macOS menu bar app for tracking Canvas LMS coursework deadlines. It fetches active courses and upcoming assignments, keeps a small offline cache, and schedules system notifications before due dates.
 
@@ -10,7 +10,6 @@ CourseWatch is a local-first macOS menu bar app for tracking Canvas LMS coursewo
 - Canvas settings for base URL and personal access token
 - Calendar Feed / `.ics` mode with automatic feed URL extraction from pasted text
 - External deadlines that can be added manually without Canvas access
-- Color setting for Follow System, White, or Black mode
 - Secure token storage in Keychain
 - Canvas API client with async `URLSession`, auth handling, decoding errors, network errors, and basic Link-header pagination
 - Upcoming assignment list sorted by due date
@@ -21,9 +20,9 @@ CourseWatch is a local-first macOS menu bar app for tracking Canvas LMS coursewo
 - Local assignment cache for offline fallback
 - System notifications 24 hours and 3 hours before due dates
 
-## v2.2 Connection Strategy
+## v2.1 Connection Strategy
 
-CourseWatch v2.2 is planned around multiple connection modes so the app can still be useful when a school locks down Canvas API access:
+CourseWatch v2.1 is planned around multiple connection modes so the app can still be useful when a school locks down Canvas API access:
 
 1. Canvas API token mode: best detail and most reliable when the user or administrator can provide a Canvas API access token.
 2. Canvas OAuth mode: future login flow if the Canvas institution approves a developer key or OAuth integration.
@@ -90,7 +89,7 @@ To create one:
 4. Use `CourseWatch` as the purpose.
 5. Generate the token, copy the token value once, and paste it into CourseWatch Settings.
 
-If Canvas says your administrators have limited your ability to generate access tokens, CourseWatch v2.2.0 cannot bypass that setting. Contact your Canvas administrator or school IT team and ask them to generate a Canvas API access token for your account, ask whether OAuth/developer-key access is available, or use a Canvas Calendar Feed / `.ics` fallback if your school exposes one.
+If Canvas says your administrators have limited your ability to generate access tokens, CourseWatch v2.1.0 cannot bypass that setting. Contact your Canvas administrator or school IT team and ask them to generate a Canvas API access token for your account, ask whether OAuth/developer-key access is available, or use a Canvas Calendar Feed / `.ics` fallback if your school exposes one.
 
 In Settings, the token-blocked card offers two next steps: Go to Calendar Feed, or Copy Email to Admin.
 
@@ -149,7 +148,6 @@ Authorization: Bearer <token>
 - External deadlines can be added with the plus button
 - External deadlines persist after relaunch
 - External deadlines can be marked done and deleted
-- Color can be changed to Follow System, White, or Black from Settings
 - Clicking an assignment with `html_url` opens the browser
 - Refresh fetches courses and assignments again
 - Notifications are requested and scheduled only for future 24h and 3h reminder times

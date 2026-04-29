@@ -8,7 +8,6 @@ struct SettingsView: View {
     let onClose: (() -> Void)?
 
     @State private var connectionMode: ConnectionMode = .canvasAPI
-    @State private var appearance: AppAppearance = .system
     @State private var baseURL: String = ""
     @State private var token: String = ""
     @State private var calendarFeedURL: String = ""
@@ -51,8 +50,6 @@ struct SettingsView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-
-                    appearanceSection
 
                     VStack(alignment: .leading, spacing: 12) {
                         VStack(alignment: .leading, spacing: 8) {
@@ -143,7 +140,6 @@ struct SettingsView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             connectionMode = viewModel.connectionMode
-            appearance = viewModel.appearance
             baseURL = viewModel.baseURL
             token = viewModel.token
             calendarFeedURL = viewModel.calendarFeedURL
@@ -194,7 +190,7 @@ struct SettingsView: View {
             }
             .keyboardShortcut(.defaultAction)
             .buttonStyle(.borderedProminent)
-            .disabled(!canSaveSettings)
+            .disabled(!canUseCurrentMode)
         }
     }
 
@@ -216,27 +212,6 @@ struct SettingsView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-    }
-
-    private var appearanceSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Color", systemImage: "paintpalette")
-                .font(.subheadline.weight(.semibold))
-
-            Picker("Color", selection: $appearance) {
-                ForEach(AppAppearance.allCases) { option in
-                    Label(option.title, systemImage: option.iconName).tag(option)
-                }
-            }
-            .pickerStyle(.segmented)
-
-            Text("Choose whether CourseWatch follows macOS, stays white, or stays black.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding(10)
-        .background(.quaternary.opacity(0.35))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var tokenHelp: some View {
@@ -342,10 +317,6 @@ struct SettingsView: View {
         case .calendarFeed:
             return ICSCalendarClient.normalizedFeedURL(from: calendarFeedURL) != nil
         }
-    }
-
-    private var canSaveSettings: Bool {
-        canUseCurrentMode || appearance != viewModel.appearance
     }
 
     private var statusColor: Color {
@@ -475,13 +446,6 @@ struct SettingsView: View {
     }
 
     private func saveCurrentSettings() {
-        viewModel.saveAppearance(appearance)
-
-        guard canUseCurrentMode else {
-            closeSettings()
-            return
-        }
-
         normalizeBaseURL()
         normalizeCalendarFeedURL()
         viewModel.saveSettings(
