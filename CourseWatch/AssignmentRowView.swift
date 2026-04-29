@@ -39,7 +39,7 @@ struct AssignmentRowView: View {
                     .frame(width: 24, height: 24)
             }
             .buttonStyle(.plain)
-            .help("Delete from CourseWatch")
+            .help(assignment.isExternalDeadline ? "Delete deadline" : "Hide from CourseWatch")
             .padding(.trailing, 12)
             .padding(.top, 10)
         }
@@ -53,7 +53,7 @@ struct AssignmentRowView: View {
             Button(role: .destructive) {
                 onDelete()
             } label: {
-                Label("Delete from CourseWatch", systemImage: "trash")
+                Label(assignment.isExternalDeadline ? "Delete Deadline" : "Hide from CourseWatch", systemImage: "trash")
             }
         }
     }
@@ -104,7 +104,11 @@ struct AssignmentRowView: View {
     }
 
     private var iconName: String {
-        assignment.dueAt == nil ? "calendar" : "clock"
+        if assignment.isExternalDeadline {
+            return "calendar.badge.plus"
+        }
+
+        return assignment.dueAt == nil ? "calendar" : "clock"
     }
 
     private var dueDateText: String {

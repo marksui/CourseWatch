@@ -3,7 +3,10 @@ import SwiftUI
 struct EmptyStateView: View {
     let title: String
     let message: String
-    let action: () -> Void
+    let primaryButtonTitle: String
+    let secondaryButtonTitle: String?
+    let primaryAction: () -> Void
+    let secondaryAction: (() -> Void)?
 
     var body: some View {
         VStack(spacing: 12) {
@@ -22,8 +25,16 @@ struct EmptyStateView: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 280)
 
-            Button(title == "Set up Canvas" ? "Open Settings" : "Refresh") {
-                action()
+            HStack(spacing: 10) {
+                Button(primaryButtonTitle) {
+                    primaryAction()
+                }
+
+                if let secondaryButtonTitle, let secondaryAction {
+                    Button(secondaryButtonTitle) {
+                        secondaryAction()
+                    }
+                }
             }
             .padding(.top, 4)
 
@@ -33,4 +44,3 @@ struct EmptyStateView: View {
         .padding()
     }
 }
-

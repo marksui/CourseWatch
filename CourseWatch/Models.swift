@@ -47,8 +47,36 @@ struct Assignment: Codable, Identifiable, Hashable {
 }
 
 extension Assignment {
+    static let externalDeadlineCourseID = -9_000_001
+
     var localIdentifier: String {
         "\(courseID)-\(id)"
+    }
+
+    var isExternalDeadline: Bool {
+        courseID == Self.externalDeadlineCourseID
+    }
+}
+
+struct ExternalDeadline: Codable, Identifiable, Hashable {
+    let id: Int
+    let title: String
+    let courseName: String
+    let dueAt: Date
+    let url: URL?
+    let createdAt: Date
+}
+
+extension ExternalDeadline {
+    var assignment: Assignment {
+        Assignment(
+            id: id,
+            courseID: Assignment.externalDeadlineCourseID,
+            name: title,
+            dueAt: dueAt,
+            htmlURL: url,
+            courseName: courseName
+        )
     }
 }
 

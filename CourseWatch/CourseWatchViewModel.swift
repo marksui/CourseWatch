@@ -12,6 +12,7 @@ final class CourseWatchViewModel: ObservableObject {
     @Published private(set) var hasSuccessfulConnection = false
     @Published private(set) var hiddenAssignmentCount = 0
     @Published private(set) var completedAssignmentCount = 0
+    @Published private(set) var externalDeadlineCount = 0
     @Published var isShowingSettings = false
 
     private let userDefaults: UserDefaults
@@ -22,8 +23,10 @@ final class CourseWatchViewModel: ObservableObject {
     private let hiddenAssignmentsKey = "hiddenAssignmentIDs"
     private let completedAssignmentsKey = "completedAssignmentIDs"
     private let cacheFileName = "assignments-cache.json"
+    private let externalDeadlinesFileName = "external-deadlines.json"
     private var hiddenAssignmentIDs: Set<String>
     private var completedAssignmentIDs: Set<String>
+    private var externalDeadlines: [ExternalDeadline]
 
     var isConfigured: Bool {
         switch connectionMode {
@@ -67,10 +70,15 @@ final class CourseWatchViewModel: ObservableObject {
         self.calendarFeedURL = (try? keychain.readCalendarFeedURL()) ?? ""
         self.hiddenAssignmentIDs = Set(userDefaults.stringArray(forKey: hiddenAssignmentsKey) ?? [])
         self.completedAssignmentIDs = Set(userDefaults.stringArray(forKey: completedAssignmentsKey) ?? [])
+        self.externalDeadlines = Self.loadExternalDeadlines(from: Self.cacheURL(fileName: externalDeadlinesFileName))
         self.hiddenAssignmentCount = hiddenAssignmentIDs.count
         self.completedAssignmentCount = completedAssignmentIDs.count
-        self.assignments = Self.loadCachedAssignments(from: Self.cacheURL(fileName: cacheFileName))
-            .filter { !hiddenAssignmentIDs.contains($0.localIdentifier) }
+        self.externalDeadlineCount = externalDeadlines.count
+        self.assignments = Self.visibleAssignments(
+            syncedAssignments: Self.loadCachedAssignments(from: Self.cacheURL(fileName: cacheFileName)),
+            externalDeadlines: externalDeadlines,
+            hiddenAssignmentIDs: hiddenAssignmentIDs
+        )
     }
 
     func start() {
@@ -78,6 +86,8 @@ final class CourseWatchViewModel: ObservableObject {
             await notificationManager.requestPermission()
             if isConfigured {
                 await refresh()
+            } else {
+                await notificationManager.rescheduleNotifications(for: incompleteAssignments)
             }
         }
     }
@@ -130,8 +140,10 @@ final class CourseWatchViewModel: ObservableObject {
         assignments = []
         hiddenAssignmentIDs.removeAll()
         completedAssignmentIDs.removeAll()
+        externalDeadlines.removeAll()
         hiddenAssignmentCount = 0
         completedAssignmentCount = 0
+        externalDeadlineCount = 0
         hasSuccessfulConnection = false
         userDefaults.removeObject(forKey: connectionModeKey)
         userDefaults.removeObject(forKey: baseURLKey)
@@ -140,9 +152,15 @@ final class CourseWatchViewModel: ObservableObject {
         try? keychain.deleteToken()
         try? keychain.deleteCalendarFeedURL()
         try? FileManager.default.removeItem(at: Self.cacheURL(fileName: cacheFileName))
+        try? FileManager.default.removeItem(at: Self.cacheURL(fileName: externalDeadlinesFileName))
     }
 
     func hideAssignment(_ assignment: Assignment) {
+        if assignment.isExternalDeadline {
+            deleteExternalDeadline(assignment)
+            return
+        }
+
         hiddenAssignmentIDs.insert(assignment.localIdentifier)
         completedAssignmentIDs.remove(assignment.localIdentifier)
         persistHiddenAssignments()
@@ -152,6 +170,43 @@ final class CourseWatchViewModel: ObservableObject {
         Task {
             await notificationManager.rescheduleNotifications(for: incompleteAssignments)
         }
+    }
+
+    func addExternalDeadline(title: String, courseName: String, dueAt: Date, urlString: String) -> Bool {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty else {
+            errorMessage = "External deadline needs a title."
+            return false
+        }
+
+        let trimmedCourseName = courseName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedURLString = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
+        let url = Self.normalizedOptionalURL(from: trimmedURLString)
+
+        if !trimmedURLString.isEmpty && url == nil {
+            errorMessage = "External deadline link is not a valid URL."
+            return false
+        }
+
+        let deadline = ExternalDeadline(
+            id: Self.newExternalDeadlineID(existingIDs: Set(externalDeadlines.map(\.id))),
+            title: trimmedTitle,
+            courseName: trimmedCourseName.nilIfEmpty ?? "External deadline",
+            dueAt: dueAt,
+            url: url,
+            createdAt: Date()
+        )
+
+        externalDeadlines.append(deadline)
+        persistExternalDeadlines()
+        assignments = (assignments + [deadline.assignment]).sortedByDueDate()
+        errorMessage = nil
+
+        Task {
+            await notificationManager.rescheduleNotifications(for: incompleteAssignments)
+        }
+
+        return true
     }
 
     func isAssignmentCompleted(_ assignment: Assignment) -> Bool {
@@ -184,7 +239,11 @@ final class CourseWatchViewModel: ObservableObject {
     func restoreHiddenAssignments() {
         hiddenAssignmentIDs.removeAll()
         persistHiddenAssignments()
-        assignments = Self.loadCachedAssignments(from: Self.cacheURL(fileName: cacheFileName))
+        assignments = Self.visibleAssignments(
+            syncedAssignments: Self.loadCachedAssignments(from: Self.cacheURL(fileName: cacheFileName)),
+            externalDeadlines: externalDeadlines,
+            hiddenAssignmentIDs: hiddenAssignmentIDs
+        )
 
         Task {
             await refresh()
@@ -264,17 +323,26 @@ final class CourseWatchViewModel: ObservableObject {
 
             let sortedAssignments = latestAssignments.sortedByDueDate()
             try saveCache(sortedAssignments)
-            assignments = sortedAssignments.filter { !hiddenAssignmentIDs.contains($0.localIdentifier) }
+            assignments = Self.visibleAssignments(
+                syncedAssignments: sortedAssignments,
+                externalDeadlines: externalDeadlines,
+                hiddenAssignmentIDs: hiddenAssignmentIDs
+            )
             hasSuccessfulConnection = true
             await notificationManager.rescheduleNotifications(for: incompleteAssignments)
         } catch {
             hasSuccessfulConnection = false
             if assignments.isEmpty {
-                assignments = Self.loadCachedAssignments(from: Self.cacheURL(fileName: cacheFileName))
+                assignments = Self.visibleAssignments(
+                    syncedAssignments: Self.loadCachedAssignments(from: Self.cacheURL(fileName: cacheFileName)),
+                    externalDeadlines: externalDeadlines,
+                    hiddenAssignmentIDs: hiddenAssignmentIDs
+                )
             }
 
             let cacheSuffix = assignments.isEmpty ? "" : " Showing cached assignments."
             errorMessage = "\(error.localizedDescription)\(cacheSuffix)"
+            await notificationManager.rescheduleNotifications(for: incompleteAssignments)
         }
 
         isLoading = false
@@ -303,6 +371,39 @@ final class CourseWatchViewModel: ObservableObject {
         userDefaults.set(Array(completedAssignmentIDs), forKey: completedAssignmentsKey)
     }
 
+    private func persistExternalDeadlines() {
+        externalDeadlineCount = externalDeadlines.count
+        let url = Self.cacheURL(fileName: externalDeadlinesFileName)
+
+        do {
+            try FileManager.default.createDirectory(
+                at: url.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            let data = try encoder.encode(externalDeadlines.sorted { $0.dueAt < $1.dueAt })
+            try data.write(to: url, options: [.atomic])
+        } catch {
+            errorMessage = "Could not save external deadlines: \(error.localizedDescription)"
+        }
+    }
+
+    private func deleteExternalDeadline(_ assignment: Assignment) {
+        externalDeadlines.removeAll { $0.id == assignment.id }
+        completedAssignmentIDs.remove(assignment.localIdentifier)
+        hiddenAssignmentIDs.remove(assignment.localIdentifier)
+        persistExternalDeadlines()
+        persistCompletedAssignments()
+        persistHiddenAssignments()
+        assignments.removeAll { $0.localIdentifier == assignment.localIdentifier }
+
+        Task {
+            await notificationManager.rescheduleNotifications(for: incompleteAssignments)
+        }
+    }
+
     private var incompleteAssignments: [Assignment] {
         assignments.filter { !completedAssignmentIDs.contains($0.localIdentifier) }
     }
@@ -315,6 +416,53 @@ final class CourseWatchViewModel: ObservableObject {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         return ((try? decoder.decode([Assignment].self, from: data)) ?? []).sortedByDueDate()
+    }
+
+    private static func loadExternalDeadlines(from url: URL) -> [ExternalDeadline] {
+        guard let data = try? Data(contentsOf: url) else {
+            return []
+        }
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return ((try? decoder.decode([ExternalDeadline].self, from: data)) ?? [])
+            .sorted { $0.dueAt < $1.dueAt }
+    }
+
+    private static func visibleAssignments(
+        syncedAssignments: [Assignment],
+        externalDeadlines: [ExternalDeadline],
+        hiddenAssignmentIDs: Set<String>
+    ) -> [Assignment] {
+        (syncedAssignments + externalDeadlines.map(\.assignment))
+            .filter { !hiddenAssignmentIDs.contains($0.localIdentifier) }
+            .sortedByDueDate()
+    }
+
+    private static func normalizedOptionalURL(from value: String) -> URL? {
+        let trimmedValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedValue.isEmpty else {
+            return nil
+        }
+
+        let valueWithScheme = trimmedValue.contains("://") ? trimmedValue : "https://\(trimmedValue)"
+        guard let components = URLComponents(string: valueWithScheme),
+              let scheme = components.scheme?.lowercased(),
+              ["http", "https"].contains(scheme),
+              components.host != nil else {
+            return nil
+        }
+
+        return components.url
+    }
+
+    private static func newExternalDeadlineID(existingIDs: Set<Int>) -> Int {
+        var candidate = Int(Date().timeIntervalSince1970 * 1000)
+        while existingIDs.contains(candidate) {
+            candidate += 1
+        }
+
+        return candidate
     }
 
     private static func cacheURL(fileName: String) -> URL {

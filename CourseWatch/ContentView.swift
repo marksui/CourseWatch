@@ -3,10 +3,16 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var viewModel: CourseWatchViewModel
+    @State private var isShowingExternalDeadlineEditor = false
 
     var body: some View {
         Group {
-            if viewModel.isShowingSettings {
+            if isShowingExternalDeadlineEditor {
+                ExternalDeadlineEditorView {
+                    isShowingExternalDeadlineEditor = false
+                }
+                .environmentObject(viewModel)
+            } else if viewModel.isShowingSettings {
                 SettingsView {
                     viewModel.isShowingSettings = false
                 }
@@ -24,20 +30,25 @@ struct ContentView: View {
 
             Divider()
 
-            if !viewModel.isConfigured {
+            if viewModel.assignments.isEmpty && !viewModel.isLoading {
                 EmptyStateView(
-                    title: "Set up Canvas",
-                    message: "Add Canvas API settings or a Calendar Feed URL to start tracking coursework."
-                ) {
-                    viewModel.isShowingSettings = true
-                }
-            } else if viewModel.assignments.isEmpty && !viewModel.isLoading {
-                EmptyStateView(
-                    title: "No upcoming assignments",
-                    message: "Refresh anytime to check Canvas for new deadlines."
-                ) {
-                    Task { await viewModel.refresh() }
-                }
+                    title: viewModel.isConfigured ? "No upcoming assignments" : "No deadlines yet",
+                    message: viewModel.isConfigured
+                        ? "Refresh anytime to check Canvas, or add an external deadline."
+                        : "Add an external deadline, or connect Canvas in Settings.",
+                    primaryButtonTitle: "Add Deadline",
+                    secondaryButtonTitle: viewModel.isConfigured ? "Refresh" : "Settings",
+                    primaryAction: {
+                        isShowingExternalDeadlineEditor = true
+                    },
+                    secondaryAction: {
+                        if viewModel.isConfigured {
+                            Task { await viewModel.refresh() }
+                        } else {
+                            viewModel.isShowingSettings = true
+                        }
+                    }
+                )
             } else {
                 assignmentList
             }
@@ -78,6 +89,13 @@ struct ContentView: View {
             }
 
             Button {
+                isShowingExternalDeadlineEditor = true
+            } label: {
+                Image(systemName: "plus")
+            }
+            .help("Add external deadline")
+
+            Button {
                 Task { await viewModel.refresh() }
             } label: {
                 Image(systemName: "arrow.clockwise")
@@ -104,7 +122,11 @@ struct ContentView: View {
     }
 
     private var assignmentCountText: String {
-        viewModel.isConfigured ? "\(viewModel.assignments.count) upcoming" : "Canvas not configured"
+        if viewModel.isConfigured {
+            return "\(viewModel.assignments.count) upcoming"
+        }
+
+        return viewModel.assignments.isEmpty ? "Canvas not configured" : "\(viewModel.assignments.count) local"
     }
 
     private var connectionIconName: String {
@@ -136,6 +158,101 @@ struct ContentView: View {
                     Divider()
                 }
             }
+        }
+    }
+}
+
+private struct ExternalDeadlineEditorView: View {
+    @EnvironmentObject private var viewModel: CourseWatchViewModel
+
+    let onClose: () -> Void
+
+    @State private var title = ""
+    @State private var courseName = ""
+    @State private var dueAt = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+    @State private var link = ""
+    @State private var statusMessage: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("External Deadline")
+                        .font(.title2.weight(.semibold))
+                    Text("Add a local deadline outside Canvas.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Button {
+                    onClose()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Close")
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                TextField("Deadline title", text: $title)
+                    .textFieldStyle(.roundedBorder)
+
+                TextField("Course or source", text: $courseName)
+                    .textFieldStyle(.roundedBorder)
+
+                DatePicker("Due", selection: $dueAt, displayedComponents: [.date, .hourAndMinute])
+                    .datePickerStyle(.compact)
+
+                TextField("Optional link", text: $link)
+                    .textFieldStyle(.roundedBorder)
+            }
+
+            if let statusMessage {
+                Text(statusMessage)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer()
+
+            HStack {
+                Label("Stored locally", systemImage: "internaldrive")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button("Cancel") {
+                    onClose()
+                }
+                .keyboardShortcut(.cancelAction)
+
+                Button("Save") {
+                    saveDeadline()
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+                .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
+        .padding(22)
+    }
+
+    private func saveDeadline() {
+        if viewModel.addExternalDeadline(
+            title: title,
+            courseName: courseName,
+            dueAt: dueAt,
+            urlString: link
+        ) {
+            onClose()
+        } else {
+            statusMessage = viewModel.errorMessage
         }
     }
 }
