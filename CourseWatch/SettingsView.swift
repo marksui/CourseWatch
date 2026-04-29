@@ -258,18 +258,27 @@ struct SettingsView: View {
 
     private var adminTokenNotice: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Label("If Canvas blocks token creation", systemImage: "exclamationmark.triangle")
+            Label("Token creation blocked?", systemImage: "exclamationmark.triangle")
                 .font(.subheadline.weight(.semibold))
 
-            Text("Some schools disable personal access tokens. If Canvas also blocks OAuth/login integrations, CourseWatch v2.0.0 needs an admin-issued token or a Canvas Calendar Feed / .ics fallback.")
+            Text("If Canvas says administrators limit access tokens, choose one next step.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Button {
-                copyAdminTokenRequest()
-            } label: {
-                Label("Copy Admin Request", systemImage: "doc.on.doc")
+            HStack(spacing: 8) {
+                Button {
+                    connectionMode = .calendarFeed
+                    statusMessage = "Switched to Calendar Feed."
+                } label: {
+                    Label("Go to Calendar Feed", systemImage: "calendar")
+                }
+
+                Button {
+                    copyAdminTokenRequest()
+                } label: {
+                    Label("Copy Email to Admin", systemImage: "envelope")
+                }
             }
         }
         .padding(10)
@@ -329,7 +338,7 @@ struct SettingsView: View {
 
     private var statusColor: Color {
         switch statusMessage {
-        case "Admin request copied.", "Calendar feed deleted.", "Calendar feed extracted.", "Canvas link pasted.", "Connection successful.", "Done marks reset.", "Hidden items restored.", "Token pasted.", "Token deleted.":
+        case "Admin email copied.", "Calendar feed deleted.", "Calendar feed extracted.", "Canvas link pasted.", "Connection successful.", "Done marks reset.", "Hidden items restored.", "Switched to Calendar Feed.", "Token pasted.", "Token deleted.":
             return .green
         default:
             return .red
@@ -480,7 +489,7 @@ struct SettingsView: View {
 
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(request, forType: .string)
-        statusMessage = "Admin request copied."
+        statusMessage = "Admin email copied."
     }
 
     private func normalizeBaseURL() {

@@ -88,6 +88,8 @@ To create one:
 
 If Canvas says your administrators have limited your ability to generate access tokens, CourseWatch v2.0.0 cannot bypass that setting. Contact your Canvas administrator or school IT team and ask them to generate a Canvas API access token for your account, ask whether OAuth/developer-key access is available, or use a Canvas Calendar Feed / `.ics` fallback if your school exposes one.
 
+In Settings, the token-blocked card offers two next steps: Go to Calendar Feed, or Copy Email to Admin.
+
 ## Calendar Feed / ICS Fallback
 
 Use this mode when Canvas blocks API tokens or OAuth access:
