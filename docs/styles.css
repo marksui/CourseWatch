@@ -90,41 +90,22 @@ a {
 }
 
 .hero {
-  position: relative;
-  min-height: calc(88svh - 68px);
-  overflow: hidden;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.68fr);
+  gap: 54px;
   align-items: center;
-  padding: 72px 32px;
-  background: #101418;
+  max-width: 1180px;
+  min-height: calc(88svh - 68px);
+  margin: 0 auto;
+  padding: 78px 32px 64px;
+  background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
 
-.hero::before {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: rgba(8, 13, 12, 0.62);
-  content: "";
-}
-
-.hero-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  opacity: 0.9;
-}
-
 .hero-content {
-  position: relative;
-  z-index: 2;
   width: min(860px, 100%);
-  margin: 0 auto;
-  color: #fff;
-  text-align: center;
+  color: var(--ink);
+  text-align: left;
 }
 
 .hero-icon {
@@ -132,12 +113,12 @@ a {
   height: 92px;
   margin-bottom: 18px;
   border-radius: 22px;
-  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 16px 40px rgba(20, 31, 28, 0.2);
 }
 
 .eyebrow {
   margin: 0 0 12px;
-  color: #96ead1;
+  color: var(--brand);
   font-size: 13px;
   font-weight: 800;
   text-transform: uppercase;
@@ -159,8 +140,8 @@ h1 {
 
 .hero-subtitle {
   max-width: 720px;
-  margin: 0 auto;
-  color: #e5edf0;
+  margin: 0;
+  color: var(--muted);
   font-size: clamp(18px, 2.5vw, 25px);
   line-height: 1.42;
 }
@@ -168,7 +149,6 @@ h1 {
 .hero-actions,
 .download-actions {
   display: flex;
-  justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
   margin-top: 28px;
@@ -186,14 +166,14 @@ h1 {
 }
 
 .button.primary {
-  background: var(--green);
-  color: #062016;
+  background: var(--brand);
+  color: #fff;
 }
 
 .button.secondary {
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
 }
 
 .button.secondary.dark {
@@ -207,18 +187,18 @@ h1 {
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   width: min(640px, 100%);
-  margin: 30px auto 0;
+  margin: 30px 0 0;
 }
 
 .hero-facts div {
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface);
 }
 
 .hero-facts dt {
-  color: #b7c8c2;
+  color: var(--muted);
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -226,8 +206,24 @@ h1 {
 
 .hero-facts dd {
   margin: 4px 0 0;
-  color: #fff;
+  color: var(--ink);
   font-weight: 800;
+}
+
+.hero-preview {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.hero-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
 }
 
 .section,
@@ -421,6 +417,15 @@ figcaption {
 }
 
 @media (max-width: 980px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-preview {
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
   .feature-grid,
   .screenshot-grid {
     grid-template-columns: repeat(2, 1fr);
