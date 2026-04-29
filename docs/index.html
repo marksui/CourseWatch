@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="CourseWatch is a local-first macOS menu bar app for Canvas deadlines, calendar feeds, external deadlines, and reminders.">
+    <title>CourseWatch - Canvas deadlines in your macOS menu bar</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="CourseWatch home">
+        <span class="brand-mark" aria-hidden="true">CW</span>
+        <span>CourseWatch</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="#features">Features</a>
+        <a href="#setup">Setup</a>
+        <a href="#privacy">Privacy</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="version">Open source macOS app | v2.1.0</p>
+          <h1 id="hero-title">CourseWatch</h1>
+          <p class="hero-subtitle">
+            Canvas deadlines, calendar feed reminders, and manual coursework dates in one quiet menu bar app.
+          </p>
+          <div class="hero-actions" aria-label="CourseWatch links">
+            <a class="button primary" href="https://github.com/marksui/CourseWatch">Download from GitHub</a>
+            <a class="button secondary" href="https://github.com/marksui/CourseWatch#readme">Read the guide</a>
+          </div>
+        </div>
+
+        <figure class="product-preview" aria-label="CourseWatch menu bar preview">
+          <div class="menu-bar">
+            <span class="traffic-dot"></span>
+            <span class="menu-title">CourseWatch</span>
+            <span class="menu-icon">cal</span>
+          </div>
+          <div class="popover">
+            <div class="popover-header">
+              <div>
+                <strong>CourseWatch</strong>
+                <span class="status"><span class="wifi" aria-hidden="true">online</span> Connected | 4 upcoming</span>
+              </div>
+              <div class="toolbar" aria-hidden="true">
+                <span>+</span>
+                <span>R</span>
+                <span>S</span>
+              </div>
+            </div>
+            <ol class="deadline-list">
+              <li>
+                <span class="check done">OK</span>
+                <div>
+                  <strong>Problem Set 5</strong>
+                  <span>CSE 101 | Done</span>
+                </div>
+                <time>Today</time>
+              </li>
+              <li>
+                <span class="check urgent"></span>
+                <div>
+                  <strong>Lab Report Draft</strong>
+                  <span>Chemistry | Due tomorrow</span>
+                </div>
+                <time>9:00 AM</time>
+              </li>
+              <li>
+                <span class="check"></span>
+                <div>
+                  <strong>External: Midterm Review</strong>
+                  <span>Study plan | Due in 3 days</span>
+                </div>
+                <time>Fri</time>
+              </li>
+              <li>
+                <span class="check"></span>
+                <div>
+                  <strong>Canvas Calendar Feed</strong>
+                  <span>Synced from .ics</span>
+                </div>
+                <time>Next week</time>
+              </li>
+            </ol>
+          </div>
+        </figure>
+      </section>
+
+      <section class="section" id="features" aria-labelledby="features-title">
+        <div class="section-heading">
+          <p class="eyebrow">Built for students</p>
+          <h2 id="features-title">Keep coursework visible without opening Canvas all day.</h2>
+        </div>
+        <div class="feature-grid">
+          <article>
+            <span class="feature-icon">API</span>
+            <h3>Canvas when available</h3>
+            <p>Use a Canvas access token to fetch active courses and upcoming assignments.</p>
+          </article>
+          <article>
+            <span class="feature-icon">ICS</span>
+            <h3>Calendar Feed fallback</h3>
+            <p>If your school blocks tokens, paste a Canvas Calendar Feed link and let CourseWatch read due dates from `.ics`.</p>
+          </article>
+          <article>
+            <span class="feature-icon">+</span>
+            <h3>External deadlines</h3>
+            <p>Add exams, readings, club work, or anything Canvas misses. Manual deadlines live beside synced items.</p>
+          </article>
+          <article>
+            <span class="feature-icon">24h</span>
+            <h3>Local reminders</h3>
+            <p>CourseWatch schedules macOS notifications 24 hours and 3 hours before due dates.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section split" id="setup" aria-labelledby="setup-title">
+        <div>
+          <p class="eyebrow">Setup choices</p>
+          <h2 id="setup-title">Start with the connection your school allows.</h2>
+          <p>
+            CourseWatch supports Canvas API tokens first, Calendar Feed when tokens are blocked, and manual external deadlines when Canvas cannot expose the item you need.
+          </p>
+        </div>
+        <div class="steps" aria-label="CourseWatch setup steps">
+          <div class="step">
+            <span>1</span>
+            <p>Paste your Canvas link in Settings.</p>
+          </div>
+          <div class="step">
+            <span>2</span>
+            <p>Use a Canvas token, or switch to Calendar Feed and Auto Extract.</p>
+          </div>
+          <div class="step">
+            <span>3</span>
+            <p>Click Test, Save, then let CourseWatch remind you.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section privacy" id="privacy" aria-labelledby="privacy-title">
+        <div class="section-heading">
+          <p class="eyebrow">Local-first</p>
+          <h2 id="privacy-title">No backend server. No Canvas password.</h2>
+        </div>
+        <div class="privacy-grid">
+          <p>Canvas tokens are stored in macOS Keychain.</p>
+          <p>Calendar Feed links and external deadlines are stored locally on your Mac.</p>
+          <p>CourseWatch is open source and provided as-is.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>CourseWatch v2.1.0</span>
+      <a href="https://github.com/marksui/CourseWatch">Source on GitHub</a>
+    </footer>
+  </body>
+</html>

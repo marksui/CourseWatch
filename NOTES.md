@@ -17,6 +17,15 @@ CourseWatch is a stable MVP for a local-first macOS menu bar coursework tracker.
 - macOS 13+
 - No third-party libraries
 
+## Website
+
+The static product website lives in `docs/`.
+
+- `docs/index.html`
+- `docs/styles.css`
+
+For GitHub Pages, publish the `docs/` folder from the `main` branch.
+
 ## Current Features
 
 - Canvas API token mode
