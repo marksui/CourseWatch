@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 final class CourseWatchViewModel: ObservableObject {
     @Published var connectionMode: ConnectionMode
+    @Published var appearance: AppAppearance
     @Published var baseURL: String
     @Published var token: String
     @Published var calendarFeedURL: String
@@ -19,6 +20,7 @@ final class CourseWatchViewModel: ObservableObject {
     private let keychain: KeychainManager
     private let notificationManager: NotificationManager
     private let connectionModeKey = "connectionMode"
+    private let appearanceKey = "appAppearance"
     private let baseURLKey = "canvasBaseURL"
     private let hiddenAssignmentsKey = "hiddenAssignmentIDs"
     private let completedAssignmentsKey = "completedAssignmentIDs"
@@ -65,6 +67,9 @@ final class CourseWatchViewModel: ObservableObject {
         self.connectionMode = ConnectionMode(
             rawValue: userDefaults.string(forKey: connectionModeKey) ?? ConnectionMode.canvasAPI.rawValue
         ) ?? .canvasAPI
+        self.appearance = AppAppearance(
+            rawValue: userDefaults.string(forKey: appearanceKey) ?? AppAppearance.system.rawValue
+        ) ?? .system
         self.baseURL = userDefaults.string(forKey: baseURLKey) ?? ""
         self.token = (try? keychain.readToken()) ?? ""
         self.calendarFeedURL = (try? keychain.readCalendarFeedURL()) ?? ""
@@ -133,7 +138,13 @@ final class CourseWatchViewModel: ObservableObject {
         }
     }
 
+    func saveAppearance(_ appearance: AppAppearance) {
+        self.appearance = appearance
+        userDefaults.set(appearance.rawValue, forKey: appearanceKey)
+    }
+
     func clearSettings() {
+        appearance = .system
         baseURL = ""
         token = ""
         calendarFeedURL = ""
@@ -146,6 +157,7 @@ final class CourseWatchViewModel: ObservableObject {
         externalDeadlineCount = 0
         hasSuccessfulConnection = false
         userDefaults.removeObject(forKey: connectionModeKey)
+        userDefaults.removeObject(forKey: appearanceKey)
         userDefaults.removeObject(forKey: baseURLKey)
         userDefaults.removeObject(forKey: hiddenAssignmentsKey)
         userDefaults.removeObject(forKey: completedAssignmentsKey)
