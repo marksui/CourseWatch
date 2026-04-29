@@ -184,7 +184,7 @@ struct SettingsView: View {
             Label("If Canvas blocks token creation", systemImage: "exclamationmark.triangle")
                 .font(.subheadline.weight(.semibold))
 
-            Text("Some schools disable personal access tokens. If Canvas says your administrators limit token creation, CourseWatch v1.0.0 cannot connect until your Canvas administrator generates an access token for you.")
+            Text("Some schools disable personal access tokens. If Canvas also blocks OAuth/login integrations, CourseWatch v2.0.0 needs an admin-issued token or a Canvas Calendar Feed / .ics fallback.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
