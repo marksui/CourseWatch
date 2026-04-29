@@ -2,10 +2,25 @@ import SwiftUI
 
 struct AssignmentRowView: View {
     let assignment: Assignment
+    let isCompleted: Bool
+    let onToggleCompleted: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
+            Button {
+                onToggleCompleted()
+            } label: {
+                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(isCompleted ? .green : .secondary)
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.plain)
+            .help(isCompleted ? "Mark as not done" : "Mark as done")
+            .padding(.leading, 12)
+            .padding(.top, 12)
+
             Button {
                 if let url = assignment.htmlURL {
                     NSWorkspace.shared.open(url)
@@ -14,6 +29,7 @@ struct AssignmentRowView: View {
                 rowContent
             }
             .buttonStyle(.plain)
+            .opacity(isCompleted ? 0.58 : 1)
 
             Button(role: .destructive) {
                 onDelete()
@@ -28,6 +44,12 @@ struct AssignmentRowView: View {
             .padding(.top, 10)
         }
         .contextMenu {
+            Button {
+                onToggleCompleted()
+            } label: {
+                Label(isCompleted ? "Mark as Not Done" : "Mark as Done", systemImage: isCompleted ? "circle" : "checkmark.circle")
+            }
+
             Button(role: .destructive) {
                 onDelete()
             } label: {
@@ -47,6 +69,7 @@ struct AssignmentRowView: View {
                 Text(assignment.name)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
+                    .strikethrough(isCompleted, color: .secondary)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
 
@@ -93,6 +116,10 @@ struct AssignmentRowView: View {
     }
 
     private var urgencyText: String {
+        if isCompleted {
+            return "Done"
+        }
+
         guard let dueAt = assignment.dueAt else {
             return "No due date"
         }
@@ -119,6 +146,10 @@ struct AssignmentRowView: View {
     }
 
     private var urgencyColor: Color {
+        if isCompleted {
+            return .green
+        }
+
         guard let dueAt = assignment.dueAt else {
             return .secondary
         }

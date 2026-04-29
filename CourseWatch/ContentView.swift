@@ -123,9 +123,16 @@ struct ContentView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.assignments) { assignment in
-                    AssignmentRowView(assignment: assignment) {
-                        viewModel.hideAssignment(assignment)
-                    }
+                    AssignmentRowView(
+                        assignment: assignment,
+                        isCompleted: viewModel.isAssignmentCompleted(assignment),
+                        onToggleCompleted: {
+                            viewModel.toggleAssignmentCompleted(assignment)
+                        },
+                        onDelete: {
+                            viewModel.hideAssignment(assignment)
+                        }
+                    )
                     Divider()
                 }
             }

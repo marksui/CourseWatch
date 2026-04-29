@@ -13,6 +13,7 @@ CourseWatch is a local-first macOS menu bar app for tracking Canvas LMS coursewo
 - Canvas API client with async `URLSession`, auth handling, decoding errors, network errors, and basic Link-header pagination
 - Upcoming assignment list sorted by due date
 - Delete/hide assignments locally from the CourseWatch list, with a restore option in Settings
+- Mark assignments done locally with a checkmark; completed items stop scheduling local notifications
 - Assignment urgency labels: overdue, due today, due tomorrow, due in X days, or no due date
 - Clickable assignment rows that open Canvas in the default browser
 - Local assignment cache for offline fallback

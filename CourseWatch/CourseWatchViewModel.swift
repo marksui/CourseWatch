@@ -11,6 +11,7 @@ final class CourseWatchViewModel: ObservableObject {
     @Published private(set) var assignments: [Assignment] = []
     @Published private(set) var hasSuccessfulConnection = false
     @Published private(set) var hiddenAssignmentCount = 0
+    @Published private(set) var completedAssignmentCount = 0
     @Published var isShowingSettings = false
 
     private let userDefaults: UserDefaults
@@ -19,8 +20,10 @@ final class CourseWatchViewModel: ObservableObject {
     private let connectionModeKey = "connectionMode"
     private let baseURLKey = "canvasBaseURL"
     private let hiddenAssignmentsKey = "hiddenAssignmentIDs"
+    private let completedAssignmentsKey = "completedAssignmentIDs"
     private let cacheFileName = "assignments-cache.json"
     private var hiddenAssignmentIDs: Set<String>
+    private var completedAssignmentIDs: Set<String>
 
     var isConfigured: Bool {
         switch connectionMode {
@@ -63,7 +66,9 @@ final class CourseWatchViewModel: ObservableObject {
         self.token = (try? keychain.readToken()) ?? ""
         self.calendarFeedURL = (try? keychain.readCalendarFeedURL()) ?? ""
         self.hiddenAssignmentIDs = Set(userDefaults.stringArray(forKey: hiddenAssignmentsKey) ?? [])
+        self.completedAssignmentIDs = Set(userDefaults.stringArray(forKey: completedAssignmentsKey) ?? [])
         self.hiddenAssignmentCount = hiddenAssignmentIDs.count
+        self.completedAssignmentCount = completedAssignmentIDs.count
         self.assignments = Self.loadCachedAssignments(from: Self.cacheURL(fileName: cacheFileName))
             .filter { !hiddenAssignmentIDs.contains($0.localIdentifier) }
     }
@@ -124,11 +129,14 @@ final class CourseWatchViewModel: ObservableObject {
         calendarFeedURL = ""
         assignments = []
         hiddenAssignmentIDs.removeAll()
+        completedAssignmentIDs.removeAll()
         hiddenAssignmentCount = 0
+        completedAssignmentCount = 0
         hasSuccessfulConnection = false
         userDefaults.removeObject(forKey: connectionModeKey)
         userDefaults.removeObject(forKey: baseURLKey)
         userDefaults.removeObject(forKey: hiddenAssignmentsKey)
+        userDefaults.removeObject(forKey: completedAssignmentsKey)
         try? keychain.deleteToken()
         try? keychain.deleteCalendarFeedURL()
         try? FileManager.default.removeItem(at: Self.cacheURL(fileName: cacheFileName))
@@ -136,8 +144,37 @@ final class CourseWatchViewModel: ObservableObject {
 
     func hideAssignment(_ assignment: Assignment) {
         hiddenAssignmentIDs.insert(assignment.localIdentifier)
+        completedAssignmentIDs.remove(assignment.localIdentifier)
         persistHiddenAssignments()
+        persistCompletedAssignments()
         assignments.removeAll { $0.localIdentifier == assignment.localIdentifier }
+
+        Task {
+            await notificationManager.rescheduleNotifications(for: incompleteAssignments)
+        }
+    }
+
+    func isAssignmentCompleted(_ assignment: Assignment) -> Bool {
+        completedAssignmentIDs.contains(assignment.localIdentifier)
+    }
+
+    func toggleAssignmentCompleted(_ assignment: Assignment) {
+        if completedAssignmentIDs.contains(assignment.localIdentifier) {
+            completedAssignmentIDs.remove(assignment.localIdentifier)
+        } else {
+            completedAssignmentIDs.insert(assignment.localIdentifier)
+        }
+
+        persistCompletedAssignments()
+
+        Task {
+            await notificationManager.rescheduleNotifications(for: incompleteAssignments)
+        }
+    }
+
+    func resetCompletedAssignments() {
+        completedAssignmentIDs.removeAll()
+        persistCompletedAssignments()
 
         Task {
             await notificationManager.rescheduleNotifications(for: assignments)
@@ -229,7 +266,7 @@ final class CourseWatchViewModel: ObservableObject {
             try saveCache(sortedAssignments)
             assignments = sortedAssignments.filter { !hiddenAssignmentIDs.contains($0.localIdentifier) }
             hasSuccessfulConnection = true
-            await notificationManager.rescheduleNotifications(for: assignments)
+            await notificationManager.rescheduleNotifications(for: incompleteAssignments)
         } catch {
             hasSuccessfulConnection = false
             if assignments.isEmpty {
@@ -259,6 +296,15 @@ final class CourseWatchViewModel: ObservableObject {
     private func persistHiddenAssignments() {
         hiddenAssignmentCount = hiddenAssignmentIDs.count
         userDefaults.set(Array(hiddenAssignmentIDs), forKey: hiddenAssignmentsKey)
+    }
+
+    private func persistCompletedAssignments() {
+        completedAssignmentCount = completedAssignmentIDs.count
+        userDefaults.set(Array(completedAssignmentIDs), forKey: completedAssignmentsKey)
+    }
+
+    private var incompleteAssignments: [Assignment] {
+        assignments.filter { !completedAssignmentIDs.contains($0.localIdentifier) }
     }
 
     private static func loadCachedAssignments(from url: URL) -> [Assignment] {
