@@ -123,7 +123,9 @@ struct ContentView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.assignments) { assignment in
-                    AssignmentRowView(assignment: assignment)
+                    AssignmentRowView(assignment: assignment) {
+                        viewModel.hideAssignment(assignment)
+                    }
                     Divider()
                 }
             }

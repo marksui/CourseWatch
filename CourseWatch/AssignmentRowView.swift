@@ -2,56 +2,82 @@ import SwiftUI
 
 struct AssignmentRowView: View {
     let assignment: Assignment
+    let onDelete: () -> Void
 
     var body: some View {
-        Button {
-            if let url = assignment.htmlURL {
-                NSWorkspace.shared.open(url)
+        HStack(alignment: .top, spacing: 8) {
+            Button {
+                if let url = assignment.htmlURL {
+                    NSWorkspace.shared.open(url)
+                }
+            } label: {
+                rowContent
             }
-        } label: {
-            HStack(alignment: .top, spacing: 10) {
-                Image(systemName: iconName)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(urgencyColor)
-                    .frame(width: 22, height: 22)
+            .buttonStyle(.plain)
 
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(assignment.name)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Image(systemName: "trash")
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.plain)
+            .help("Delete from CourseWatch")
+            .padding(.trailing, 12)
+            .padding(.top, 10)
+        }
+        .contextMenu {
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Label("Delete from CourseWatch", systemImage: "trash")
+            }
+        }
+    }
 
-                    Text(assignment.courseName)
+    private var rowContent: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: iconName)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(urgencyColor)
+                .frame(width: 22, height: 22)
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text(assignment.name)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+
+                Text(assignment.courseName)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+
+                HStack(spacing: 8) {
+                    Text(dueDateText)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
 
-                    HStack(spacing: 8) {
-                        Text(dueDateText)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-
-                        Text(urgencyText)
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(urgencyColor)
-                    }
-                }
-
-                Spacer(minLength: 8)
-
-                if assignment.htmlURL != nil {
-                    Image(systemName: "arrow.up.right")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                    Text(urgencyText)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(urgencyColor)
                 }
             }
-            .contentShape(Rectangle())
-            .padding(.horizontal, 14)
-            .padding(.vertical, 11)
+
+            Spacer(minLength: 8)
+
+            if assignment.htmlURL != nil {
+                Image(systemName: "arrow.up.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
         }
-        .buttonStyle(.plain)
-        .disabled(assignment.htmlURL == nil)
+        .contentShape(Rectangle())
+        .padding(.leading, 14)
+        .padding(.vertical, 11)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var iconName: String {
@@ -115,4 +141,3 @@ struct AssignmentRowView: View {
         return .green
     }
 }
-

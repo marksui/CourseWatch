@@ -149,6 +149,13 @@ struct SettingsView: View {
                     statusMessage = connectionMode == .canvasAPI ? "Token deleted." : "Calendar feed deleted."
                 }
 
+                Button("Restore Hidden") {
+                    viewModel.restoreHiddenAssignments()
+                    statusMessage = "Hidden items restored."
+                }
+                .disabled(viewModel.hiddenAssignmentCount == 0)
+                .help("Restore assignments deleted from CourseWatch")
+
                 Spacer()
 
                 Button("Cancel") {
@@ -315,7 +322,7 @@ struct SettingsView: View {
 
     private var statusColor: Color {
         switch statusMessage {
-        case "Admin request copied.", "Calendar feed deleted.", "Calendar feed extracted.", "Canvas link pasted.", "Connection successful.", "Token pasted.", "Token deleted.":
+        case "Admin request copied.", "Calendar feed deleted.", "Calendar feed extracted.", "Canvas link pasted.", "Connection successful.", "Hidden items restored.", "Token pasted.", "Token deleted.":
             return .green
         default:
             return .red

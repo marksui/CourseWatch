@@ -46,6 +46,12 @@ struct Assignment: Codable, Identifiable, Hashable {
     }
 }
 
+extension Assignment {
+    var localIdentifier: String {
+        "\(courseID)-\(id)"
+    }
+}
+
 struct CanvasAssignmentResponse: Decodable {
     let id: Int
     let courseID: Int?
