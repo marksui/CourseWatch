@@ -92,6 +92,12 @@ Click the plus button in CourseWatch, enter a title, optional course/source, due
 - macOS 13 or newer
 - Canvas access token or Calendar Feed link, unless you only use manual external deadlines
 
+## Download
+
+The current macOS app ZIP is available at [docs/downloads/CourseWatch-v2.1.0-macOS.zip](docs/downloads/CourseWatch-v2.1.0-macOS.zip).
+
+This build is ad-hoc signed. If macOS shows a warning when opening it, right-click CourseWatch and choose Open.
+
 ## Notes for Maintainers
 
 Developer notes, architecture details, Canvas endpoints, setup steps, and the testing checklist are in [NOTES.md](NOTES.md).

@@ -190,7 +190,7 @@ struct SettingsView: View {
             }
             .keyboardShortcut(.defaultAction)
             .buttonStyle(.borderedProminent)
-            .disabled(!canUseCurrentMode)
+            .disabled(!canSaveSettings)
         }
     }
 
@@ -319,9 +319,13 @@ struct SettingsView: View {
         }
     }
 
+    private var canSaveSettings: Bool {
+        canUseCurrentMode || normalizedCanvasBaseURL(from: baseURL) != nil
+    }
+
     private var statusColor: Color {
         switch statusMessage {
-        case "Admin email copied.", "Calendar feed deleted.", "Calendar feed extracted.", "Canvas link pasted.", "Connection successful.", "Done marks reset.", "Hidden items restored.", "Switched to Calendar Feed.", "Token pasted.", "Token deleted.":
+        case "Admin email copied.", "Calendar feed deleted.", "Calendar feed extracted.", "Canvas link saved.", "Connection successful.", "Done marks reset.", "Hidden items restored.", "Switched to Calendar Feed.", "Token pasted.", "Token deleted.":
             return .green
         default:
             return .red
@@ -381,7 +385,8 @@ struct SettingsView: View {
         }
 
         baseURL = normalizedURL.absoluteString
-        statusMessage = "Canvas link pasted."
+        viewModel.saveCanvasBaseURL(baseURL)
+        statusMessage = "Canvas link saved."
     }
 
     private func pasteTokenFromClipboard() {
@@ -454,7 +459,9 @@ struct SettingsView: View {
             token: token,
             calendarFeedURL: calendarFeedURL
         )
-        Task { await viewModel.refresh() }
+        if viewModel.isConfigured {
+            Task { await viewModel.refresh() }
+        }
         closeSettings()
     }
 

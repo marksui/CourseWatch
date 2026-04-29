@@ -101,6 +101,13 @@ final class CourseWatchViewModel: ObservableObject {
         )
     }
 
+    func saveCanvasBaseURL(_ baseURL: String) {
+        let trimmedBaseURL = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.baseURL = trimmedBaseURL
+        hasSuccessfulConnection = false
+        userDefaults.set(trimmedBaseURL, forKey: baseURLKey)
+    }
+
     func saveSettings(connectionMode: ConnectionMode, baseURL: String, token: String, calendarFeedURL: String) {
         let trimmedBaseURL = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedToken = token.trimmingCharacters(in: .whitespacesAndNewlines)

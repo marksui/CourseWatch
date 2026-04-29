@@ -135,6 +135,16 @@ The local machine may only have Command Line Tools rather than full Xcode. In th
 swiftc -typecheck -target arm64-apple-macos13.0 CourseWatch/*.swift
 ```
 
+## User Download Build
+
+The current downloadable app ZIP is:
+
+```text
+docs/downloads/CourseWatch-v2.1.0-macOS.zip
+```
+
+This repository currently builds that ZIP with Command Line Tools using `swiftc`, a hand-written app bundle `Info.plist`, generated `CourseWatch.icns`, and ad-hoc `codesign --sign -`. A full Xcode archive and notarized release should replace this before wider distribution.
+
 ## Testing Checklist
 
 - Launches as a menu bar app without a Dock window
