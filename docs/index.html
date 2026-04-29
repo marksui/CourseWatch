@@ -15,6 +15,7 @@
       </a>
       <nav class="site-nav" aria-label="Primary navigation">
         <a href="#features">Features</a>
+        <a href="#screenshots">Screenshots</a>
         <a href="#setup">Setup</a>
         <a href="#privacy">Privacy</a>
       </nav>
@@ -22,6 +23,14 @@
 
     <main id="top">
       <section class="hero" aria-labelledby="hero-title">
+        <img
+          class="hero-image"
+          src="assets/coursewatch-deadlines.jpg"
+          width="754"
+          height="900"
+          alt=""
+          aria-hidden="true"
+        >
         <div class="hero-copy">
           <p class="version">Open source macOS app | v2.1.0</p>
           <h1 id="hero-title">CourseWatch</h1>
@@ -33,61 +42,6 @@
             <a class="button secondary" href="https://github.com/marksui/CourseWatch#readme">Read the guide</a>
           </div>
         </div>
-
-        <figure class="product-preview" aria-label="CourseWatch menu bar preview">
-          <div class="menu-bar">
-            <span class="traffic-dot"></span>
-            <span class="menu-title">CourseWatch</span>
-            <span class="menu-icon">cal</span>
-          </div>
-          <div class="popover">
-            <div class="popover-header">
-              <div>
-                <strong>CourseWatch</strong>
-                <span class="status"><span class="wifi" aria-hidden="true">online</span> Connected | 4 upcoming</span>
-              </div>
-              <div class="toolbar" aria-hidden="true">
-                <span>+</span>
-                <span>R</span>
-                <span>S</span>
-              </div>
-            </div>
-            <ol class="deadline-list">
-              <li>
-                <span class="check done">OK</span>
-                <div>
-                  <strong>Problem Set 5</strong>
-                  <span>CSE 101 | Done</span>
-                </div>
-                <time>Today</time>
-              </li>
-              <li>
-                <span class="check urgent"></span>
-                <div>
-                  <strong>Lab Report Draft</strong>
-                  <span>Chemistry | Due tomorrow</span>
-                </div>
-                <time>9:00 AM</time>
-              </li>
-              <li>
-                <span class="check"></span>
-                <div>
-                  <strong>External: Midterm Review</strong>
-                  <span>Study plan | Due in 3 days</span>
-                </div>
-                <time>Fri</time>
-              </li>
-              <li>
-                <span class="check"></span>
-                <div>
-                  <strong>Canvas Calendar Feed</strong>
-                  <span>Synced from .ics</span>
-                </div>
-                <time>Next week</time>
-              </li>
-            </ol>
-          </div>
-        </figure>
       </section>
 
       <section class="section" id="features" aria-labelledby="features-title">
@@ -116,6 +70,55 @@
             <h3>Local reminders</h3>
             <p>CourseWatch schedules macOS notifications 24 hours and 3 hours before due dates.</p>
           </article>
+        </div>
+      </section>
+
+      <section class="section screenshots" id="screenshots" aria-labelledby="screenshots-title">
+        <div class="section-heading">
+          <p class="eyebrow">Real app screens</p>
+          <h2 id="screenshots-title">Canvas setup, Calendar Feed fallback, and manual deadlines.</h2>
+        </div>
+        <div class="screenshot-grid">
+          <figure>
+            <img
+              src="assets/coursewatch-deadlines.jpg"
+              width="754"
+              height="900"
+              loading="lazy"
+              alt="CourseWatch menu bar list showing Canvas Calendar deadlines, done checkmarks, due dates, and toolbar buttons."
+            >
+            <figcaption>Upcoming deadlines in the menu bar.</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="assets/coursewatch-settings-canvas.jpg"
+              width="763"
+              height="900"
+              loading="lazy"
+              alt="CourseWatch Settings in Canvas API mode with Canvas link, token input, token help, and token blocked fallback."
+            >
+            <figcaption>Canvas API settings and token fallback options.</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="assets/coursewatch-settings-calendar.jpg"
+              width="752"
+              height="900"
+              loading="lazy"
+              alt="CourseWatch Settings in Calendar Feed mode with calendar feed URL, Auto Extract button, and open source security statement."
+            >
+            <figcaption>Calendar Feed mode for schools that block tokens.</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="assets/coursewatch-external-deadline.jpg"
+              width="765"
+              height="900"
+              loading="lazy"
+              alt="CourseWatch External Deadline editor with title, course, due date, optional link, and stored locally label."
+            >
+            <figcaption>External deadlines for anything outside Canvas.</figcaption>
+          </figure>
         </div>
       </section>
 

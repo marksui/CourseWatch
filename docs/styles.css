@@ -83,15 +83,40 @@ a {
 }
 
 .hero {
-  min-height: calc(88svh - 68px);
-  padding: 58px 32px 42px;
-  background: #eef2f7;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: calc(78svh - 68px);
+  overflow: hidden;
+  padding: 72px 32px;
+  background: #111827;
   border-bottom: 1px solid var(--line);
 }
 
+.hero::before {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(8, 13, 23, 0.62);
+  content: "";
+}
+
+.hero-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  opacity: 0.86;
+}
+
 .hero-copy {
+  position: relative;
+  z-index: 2;
   max-width: 760px;
-  margin: 0 auto 38px;
+  margin: 0 auto;
+  color: #fff;
   text-align: center;
 }
 
@@ -102,6 +127,10 @@ a {
   font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.hero .version {
+  color: #7dd3fc;
 }
 
 h1,
@@ -120,7 +149,7 @@ h1 {
 .hero-subtitle {
   margin: 0 auto;
   max-width: 680px;
-  color: #344054;
+  color: #d6dee8;
   font-size: 22px;
   line-height: 1.45;
 }
@@ -149,143 +178,26 @@ h1 {
 }
 
 .button.secondary {
-  border: 1px solid #b8c1cc;
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--ink);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
 }
 
-.product-preview {
-  width: min(760px, 100%);
-  margin: 0 auto;
+.screenshot-grid img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid rgba(17, 24, 39, 0.22);
+  border-radius: 8px;
   box-shadow: var(--shadow);
 }
 
-.menu-bar {
-  display: flex;
-  align-items: center;
-  height: 42px;
-  padding: 0 16px;
-  border-radius: 8px 8px 0 0;
-  background: #121821;
-  color: #dbe4ee;
-}
-
-.traffic-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--red);
-  box-shadow: 18px 0 0 #e6a33a, 36px 0 0 #3aa65c;
-}
-
-.menu-title {
-  margin-left: 62px;
-  font-size: 13px;
-  color: #aeb8c4;
-}
-
-.menu-icon {
-  margin-left: auto;
-  font-family: "SF Pro", -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.popover {
-  overflow: hidden;
-  border: 1px solid #202936;
-  border-top: 0;
-  border-radius: 0 0 8px 8px;
-  background: #18212c;
-  color: #f8fafc;
-}
-
-.popover-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.popover-header strong {
-  display: block;
-  font-size: 18px;
-}
-
-.status {
-  display: block;
-  margin-top: 4px;
-  color: #a8b3c2;
-  font-size: 13px;
-}
-
-.wifi {
-  color: #55d27d;
-}
-
-.toolbar {
-  display: flex;
-  gap: 10px;
-}
-
-.toolbar span {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.09);
-}
-
-.deadline-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.deadline-list li {
-  display: grid;
-  grid-template-columns: 28px 1fr auto;
-  align-items: center;
-  gap: 12px;
-  padding: 15px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.deadline-list li:last-child {
-  border-bottom: 0;
-}
-
-.deadline-list strong {
-  display: block;
-  font-size: 15px;
-}
-
-.deadline-list span,
-.deadline-list time {
-  color: #a8b3c2;
-  font-size: 13px;
-}
-
-.check {
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border: 2px solid #627084;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.check.done {
-  border-color: var(--green);
-  background: var(--green);
-}
-
-.check.urgent {
-  border-color: var(--amber);
+figcaption {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: center;
 }
 
 .section {
@@ -311,12 +223,22 @@ h3 {
 }
 
 .feature-grid,
-.privacy-grid {
+.privacy-grid,
+.screenshot-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   max-width: 1120px;
   margin: 0 auto;
+}
+
+.screenshot-grid {
+  grid-template-columns: repeat(4, 1fr);
+  align-items: start;
+}
+
+.screenshot-grid figure {
+  margin: 0;
 }
 
 .feature-grid article,
@@ -435,7 +357,7 @@ h3 {
 
   .hero {
     min-height: auto;
-    padding: 34px 18px 26px;
+    padding: 72px 18px;
   }
 
   h1 {
@@ -444,20 +366,6 @@ h3 {
 
   .hero-subtitle {
     font-size: 19px;
-  }
-
-  .popover-header,
-  .deadline-list li {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-
-  .toolbar {
-    display: none;
-  }
-
-  .deadline-list li:nth-child(n+3) {
-    display: none;
   }
 
   .section {
@@ -470,6 +378,7 @@ h3 {
 
   .feature-grid,
   .privacy-grid,
+  .screenshot-grid,
   .split {
     grid-template-columns: 1fr;
   }
