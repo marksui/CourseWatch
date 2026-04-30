@@ -1,16 +1,16 @@
 :root {
   color-scheme: light;
-  --bg: #f6f7f4;
+  --bg: #f7f9fc;
   --surface: #ffffff;
-  --surface-soft: #eef2ed;
-  --ink: #101418;
-  --muted: #5e6a64;
-  --line: #d8dcd4;
-  --brand: #245f4f;
-  --brand-dark: #163d35;
-  --blue: #1f63d1;
-  --green: #10b981;
-  --shadow: 0 22px 70px rgba(20, 31, 28, 0.18);
+  --surface-soft: #eaf2ff;
+  --ink: #101827;
+  --muted: #5d6b80;
+  --line: #d8e1ee;
+  --brand: #2563eb;
+  --brand-dark: #153e9f;
+  --blue: #2563eb;
+  --green: #2563eb;
+  --shadow: 0 22px 70px rgba(37, 99, 235, 0.14);
 }
 
 * {
@@ -42,8 +42,8 @@ a {
   justify-content: space-between;
   min-height: 68px;
   padding: 0 32px;
-  border-bottom: 1px solid rgba(16, 20, 24, 0.08);
-  background: rgba(246, 247, 244, 0.92);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.1);
+  background: rgba(247, 249, 252, 0.92);
   backdrop-filter: blur(18px);
 }
 
@@ -60,7 +60,7 @@ a {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(20, 31, 28, 0.16);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.18);
   object-fit: cover;
 }
 
@@ -113,7 +113,7 @@ a {
   height: 92px;
   margin-bottom: 18px;
   border-radius: 22px;
-  box-shadow: 0 16px 40px rgba(20, 31, 28, 0.2);
+  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.2);
 }
 
 .eyebrow {
@@ -287,7 +287,7 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
-  box-shadow: 0 10px 34px rgba(20, 31, 28, 0.06);
+  box-shadow: 0 10px 34px rgba(37, 99, 235, 0.08);
 }
 
 .feature-chip {
@@ -318,12 +318,12 @@ h1 {
 }
 
 .screenshots {
-  background: #101418;
+  background: #0b1220;
   color: #fff;
 }
 
 .screenshots .section-heading .eyebrow {
-  color: #96ead1;
+  color: #93c5fd;
 }
 
 .screenshots .section-heading h2 {
@@ -349,7 +349,7 @@ h1 {
 
 figcaption {
   margin-top: 12px;
-  color: #b7c8c2;
+  color: #bfdbfe;
   font-size: 14px;
   line-height: 1.45;
   text-align: center;
@@ -393,12 +393,12 @@ figcaption {
 }
 
 .download-panel .eyebrow {
-  color: #96ead1;
+  color: #bfdbfe;
 }
 
 .download-panel p {
   margin-bottom: 0;
-  color: #dce7e2;
+  color: #dbeafe;
 }
 
 .download-actions {
