@@ -104,12 +104,11 @@ a {
 .hero {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 44px;
   align-items: center;
   max-width: 1120px;
-  min-height: calc(92svh - 68px);
+  min-height: calc(64svh - 68px);
   margin: 0 auto;
-  padding: 86px 32px 70px;
+  padding: 92px 32px 86px;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
@@ -224,37 +223,6 @@ h1 {
   border-color: var(--line);
   background: #fff;
   color: var(--ink);
-}
-
-.hero-preview {
-  position: relative;
-  width: min(760px, 100%);
-  margin: 0 auto;
-  padding: 42px 10px 10px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-
-.hero-preview::before {
-  position: absolute;
-  top: 16px;
-  left: 18px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #ff5f57;
-  box-shadow: 18px 0 0 #ffbd2e, 36px 0 0 #28c840;
-  content: "";
-}
-
-.hero-preview img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
 }
 
 .section,
@@ -430,15 +398,6 @@ figcaption {
 }
 
 @media (max-width: 980px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-preview {
-    max-width: 520px;
-    margin: 0 auto;
-  }
-
   .feature-grid,
   .screenshot-grid {
     grid-template-columns: repeat(2, 1fr);
