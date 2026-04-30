@@ -94,7 +94,11 @@ Click the plus button in CourseWatch, enter a title, optional course/source, due
 
 ## Download
 
-The current macOS release is available on the [CourseWatch releases page](https://github.com/marksui/CourseWatch/releases/tag/v2.1.0).
+Download the current macOS build directly:
+
+[CourseWatch-v2.1.0.dmg](https://github.com/marksui/CourseWatch/releases/download/v2.1.0/CourseWatch-v2.1.0.dmg)
+
+Release notes are available on the [CourseWatch releases page](https://github.com/marksui/CourseWatch/releases/tag/v2.1.0).
 
 This build is ad-hoc signed. If macOS shows a warning when opening it, right-click CourseWatch and choose Open.
 

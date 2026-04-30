@@ -172,6 +172,27 @@ h1 {
   justify-content: center;
 }
 
+.release-meta {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.release-meta [data-download-count] {
+  color: var(--brand);
+}
+
+.release-meta.compact {
+  justify-content: flex-start;
+  margin-top: 12px;
+}
+
 .button {
   display: inline-flex;
   align-items: center;

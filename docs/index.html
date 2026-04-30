@@ -20,7 +20,7 @@
         <a href="#screenshots">Screenshots</a>
         <a href="#privacy">Privacy</a>
         <a href="https://github.com/marksui/CourseWatch">GitHub</a>
-        <a class="nav-download" href="https://github.com/marksui/CourseWatch/releases/download/v2.1.0/CourseWatch-v2.1.0.dmg">Download</a>
+        <a class="nav-download" href="https://github.com/marksui/CourseWatch/releases/download/v2.1.0/CourseWatch-v2.1.0.dmg" data-download-link>Download</a>
       </nav>
     </header>
 
@@ -34,9 +34,14 @@
             A local-first menu bar app for Canvas deadlines, Calendar Feed reminders, and manual coursework dates.
           </p>
           <div class="hero-actions" aria-label="CourseWatch actions">
-            <a class="button primary" href="https://github.com/marksui/CourseWatch/releases/download/v2.1.0/CourseWatch-v2.1.0.dmg">Download for macOS</a>
+            <a class="button primary" href="https://github.com/marksui/CourseWatch/releases/download/v2.1.0/CourseWatch-v2.1.0.dmg" data-download-link>Download for macOS</a>
             <a class="button secondary" href="https://github.com/marksui/CourseWatch">View on GitHub</a>
           </div>
+          <p class="release-meta">
+            <span>CourseWatch-v2.1.0.dmg</span>
+            <span aria-hidden="true">|</span>
+            <span data-download-count>Checking GitHub downloads...</span>
+          </p>
           <dl class="hero-facts" aria-label="CourseWatch highlights">
             <div>
               <dt>Platform</dt>
@@ -190,10 +195,15 @@
         <div>
           <p class="eyebrow">Download</p>
           <h2 id="download-title">Try CourseWatch from GitHub.</h2>
-          <p>Download the macOS app DMG or open the repository. This build is ad-hoc signed; if macOS warns, use right-click Open.</p>
+          <p>Download the macOS app DMG directly from GitHub Releases. This build is ad-hoc signed; if macOS warns, use right-click Open.</p>
+          <p class="release-meta compact">
+            <span>v2.1.0</span>
+            <span aria-hidden="true">|</span>
+            <span data-download-count>Checking GitHub downloads...</span>
+          </p>
         </div>
         <div class="download-actions">
-          <a class="button primary" href="https://github.com/marksui/CourseWatch/releases/download/v2.1.0/CourseWatch-v2.1.0.dmg">Download for macOS</a>
+          <a class="button primary" href="https://github.com/marksui/CourseWatch/releases/download/v2.1.0/CourseWatch-v2.1.0.dmg" data-download-link>Download for macOS</a>
           <a class="button secondary dark" href="https://github.com/marksui/CourseWatch">GitHub Repository</a>
         </div>
       </section>
@@ -203,5 +213,55 @@
       <span>CourseWatch v2.1.0</span>
       <span>Open source macOS coursework tracker</span>
     </footer>
+    <script>
+      const release = {
+        apiUrl: "https://api.github.com/repos/marksui/CourseWatch/releases/tags/v2.1.0",
+        assetName: "CourseWatch-v2.1.0.dmg",
+        downloadUrl: "https://github.com/marksui/CourseWatch/releases/download/v2.1.0/CourseWatch-v2.1.0.dmg"
+      };
+
+      document.querySelectorAll("[data-download-link]").forEach((link) => {
+        link.href = release.downloadUrl;
+      });
+
+      const downloadCountNodes = document.querySelectorAll("[data-download-count]");
+      const setDownloadCount = (text) => {
+        downloadCountNodes.forEach((node) => {
+          node.textContent = text;
+        });
+      };
+
+      const formatDownloads = (count) => {
+        const formatted = new Intl.NumberFormat("en-US").format(count);
+        return `${formatted} GitHub download${count === 1 ? "" : "s"}`;
+      };
+
+      fetch(release.apiUrl, {
+        headers: {
+          Accept: "application/vnd.github+json"
+        }
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Release unavailable");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          const asset = data.assets?.find((item) => item.name === release.assetName);
+          if (!asset) {
+            throw new Error("DMG asset unavailable");
+          }
+
+          const downloadUrl = asset.browser_download_url || release.downloadUrl;
+          document.querySelectorAll("[data-download-link]").forEach((link) => {
+            link.href = downloadUrl;
+          });
+          setDownloadCount(formatDownloads(asset.download_count || 0));
+        })
+        .catch(() => {
+          setDownloadCount("GitHub download count unavailable");
+        });
+    </script>
   </body>
 </html>
