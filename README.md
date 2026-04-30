@@ -22,7 +22,7 @@ CourseWatch is local-first. Your settings and saved deadlines stay on your Mac. 
 
 1. Open CourseWatch from the macOS menu bar.
 2. Click Settings.
-3. Paste your Canvas link, for example `https://canvas.ucsd.edu`.
+3. Paste your Canvas link, for example `https://canvas.example.edu`.
 4. Choose one connection method:
    - Canvas API token, if your school lets you create one.
    - Calendar Feed, if tokens are blocked.
@@ -94,7 +94,7 @@ Click the plus button in CourseWatch, enter a title, optional course/source, due
 
 ## Download
 
-The current macOS app ZIP is available at [docs/downloads/CourseWatch-v2.1.0-macOS.zip](docs/downloads/CourseWatch-v2.1.0-macOS.zip).
+The current macOS release is available on the [CourseWatch releases page](https://github.com/marksui/CourseWatch/releases/tag/v2.1.0).
 
 This build is ad-hoc signed. If macOS shows a warning when opening it, right-click CourseWatch and choose Open.
 

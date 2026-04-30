@@ -54,7 +54,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 8) {
-                                TextField("https://canvas.ucsd.edu", text: baseURLBinding)
+                                TextField("https://canvas.example.edu", text: baseURLBinding)
                                     .textFieldStyle(.roundedBorder)
 
                                 Button {

@@ -137,13 +137,13 @@ swiftc -typecheck -target arm64-apple-macos13.0 CourseWatch/*.swift
 
 ## User Download Build
 
-The current downloadable app ZIP is:
+The current downloadable app release is:
 
 ```text
-docs/downloads/CourseWatch-v2.1.0-macOS.zip
+https://github.com/marksui/CourseWatch/releases/tag/v2.1.0
 ```
 
-This repository currently builds that ZIP with Command Line Tools using `swiftc`, a hand-written app bundle `Info.plist`, generated `CourseWatch.icns`, and ad-hoc `codesign --sign -`. A full Xcode archive and notarized release should replace this before wider distribution.
+This repository currently builds the local DMG with Command Line Tools using `swiftc`, a hand-written app bundle `Info.plist`, generated `CourseWatch.icns`, and ad-hoc `codesign --sign -`. A full Xcode archive and notarized release should replace this before wider distribution.
 
 ## Testing Checklist
 
